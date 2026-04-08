@@ -160,6 +160,19 @@ export default function SubscriptionPage() {
         console.error('Payment creation error:', error);
         setFormError('Error al registrar el pago');
       } else {
+        // Notify super admin
+        fetch('/api/admin/notify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            restaurantName: currentRestaurant.name,
+            ownerName: profile.full_name,
+            ownerEmail: profile.email,
+            amount: paymentAmount,
+            planType: selectedPlan === 'annual' ? 'Anual' : 'Mensual',
+          }),
+        }).catch(console.error);
+
         setReceiptFile(null);
         setShowPaymentForm(false);
         fetchData();

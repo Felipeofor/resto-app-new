@@ -486,3 +486,112 @@ export function orderConfirmationTemplate({
 
   return baseLayout(content, footer)
 }
+
+/* ------ Payment Pending Alert (to super admin) ---------------------------------------- */
+export function paymentPendingTemplate(opts: {
+  restaurantName: string;
+  ownerName: string;
+  ownerEmail: string;
+  amount: number;
+  planType: string;
+}): string {
+  const content = `
+  ${sectionTitle('Nuevo pago pendiente de aprobacion')}
+  <p style="margin:16px 0 0;color:#374151;font-size:15px;line-height:1.7;">
+    <strong>${opts.restaurantName}</strong> envio un comprobante de pago que necesita revision.
+  </p>
+  <table style="width:100%;margin-top:20px;border-collapse:collapse;">
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Restaurante</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:14px;text-align:right;">${opts.restaurantName}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Dueno</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:14px;text-align:right;">${opts.ownerName} (${opts.ownerEmail})</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Monto</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:14px;text-align:right;">$${opts.amount.toLocaleString('es-AR')}</td></tr>
+    <tr><td style="padding:10px 0;color:#6b7280;font-size:14px;">Plan</td><td style="padding:10px 0;font-weight:700;font-size:14px;text-align:right;">${opts.planType}</td></tr>
+  </table>
+  ${ctaButton('Revisar pago', siteUrl + '/dashboard/admin/subscriptions')}`
+  return baseLayout(content)
+}
+
+/* ------ Super Admin Daily Digest ---------------------------------------------------- */
+export function superAdminDailyDigestTemplate(opts: {
+  date: string;
+  newRestaurants: number;
+  newDishes: number;
+  qrScans: number;
+  menuVisits: number;
+  newEmails: number;
+  pendingPayments: number;
+  topRestaurants: { name: string; visits: number }[];
+}): string {
+  const topRows = opts.topRestaurants.map((r, i) => `
+    <tr>
+      <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px;color:#374151;">${i + 1}. ${r.name}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700;text-align:right;color:#7c3aed;">${r.visits} visitas</td>
+    </tr>`).join('')
+  const content = `
+  ${sectionTitle('Resumen diario - ' + opts.date)}
+  <p style="margin:16px 0 0;color:#6b7280;font-size:14px;">Actividad de ayer en la plataforma RestoQR.</p>
+  <table style="width:100%;margin-top:20px;border-collapse:collapse;">
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Restaurantes nuevos</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;color:#22c55e;">${opts.newRestaurants}</td></tr>
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Platos agregados</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;">${opts.newDishes}</td></tr>
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Escaneos QR</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;">${opts.qrScans}</td></tr>
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Visitas a menus</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;">${opts.menuVisits}</td></tr>
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Emails recolectados</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;">${opts.newEmails}</td></tr>
+    <tr><td style="padding:12px 0;color:#6b7280;font-size:14px;">Pagos pendientes</td><td style="padding:12px 0;font-weight:700;font-size:20px;text-align:right;color:${opts.pendingPayments > 0 ? '#ef4444' : '#22c55e'};">${opts.pendingPayments}</td></tr>
+  </table>
+  ${opts.topRestaurants.length > 0 ? `
+  <div style="margin-top:28px;">
+    <h3 style="font-size:16px;font-weight:700;color:#111827;margin:0 0 12px;">Top 5 restaurantes mas activos</h3>
+    <table style="width:100%;border-collapse:collapse;">${topRows}</table>
+  </div>` : ''}
+  ${ctaButton('Ver panel admin', siteUrl + '/dashboard/admin')}`
+  return baseLayout(content)
+}
+
+/* ------ Restaurant Owner Weekly Digest ---------------------------------------------- */
+export function restaurantWeeklyDigestTemplate(opts: {
+  restaurantName: string;
+  isPro: boolean;
+  qrScans: number;
+  menuVisits: number;
+  newEmails: number;
+  totalOrders?: number;
+  totalRevenue?: number;
+  topDishes?: { name: string; orders: number }[];
+}): string {
+  const proMetrics = opts.isPro ? `
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Pedidos recibidos</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;">${opts.totalOrders || 0}</td></tr>
+    <tr><td style="padding:12px 0;color:#6b7280;font-size:14px;">Ingresos por pedidos</td><td style="padding:12px 0;font-weight:700;font-size:20px;text-align:right;color:#22c55e;">$${(opts.totalRevenue || 0).toLocaleString('es-AR')}</td></tr>` : ''
+  const topDishesSection = opts.isPro && opts.topDishes && opts.topDishes.length > 0 ? `
+  <div style="margin-top:28px;">
+    <h3 style="font-size:16px;font-weight:700;color:#111827;margin:0 0 12px;">Platos mas pedidos</h3>
+    <table style="width:100%;border-collapse:collapse;">
+      ${opts.topDishes.map((d, i) => `<tr><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px;color:#374151;">${i + 1}. ${d.name}</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700;text-align:right;">${d.orders} pedidos</td></tr>`).join('')}
+    </table>
+  </div>` : ''
+  const proUpsell = !opts.isPro ? `
+  <div style="margin-top:28px;padding:20px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:12px;color:#ffffff;">
+    <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;">Desbloquea todo con Plan Pro</h3>
+    <p style="margin:0 0 4px;font-size:13px;opacity:0.9;">Con Pro obtenes:</p>
+    <ul style="margin:8px 0 16px;padding-left:20px;font-size:13px;opacity:0.9;line-height:1.8;">
+      <li>Pedidos y delivery con seguimiento</li>
+      <li>Metricas avanzadas y tendencias</li>
+      <li>Captura de menu con IA</li>
+      <li>Fotos HD ilimitadas</li>
+      <li>Finanzas con desglose y CSV</li>
+      <li>Emails automaticos de bienvenida</li>
+    </ul>
+    <a href="${siteUrl}/dashboard/subscription" style="display:inline-block;padding:12px 28px;background:#ffffff;color:#7c3aed;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">Ver Plan Pro</a>
+  </div>` : ''
+  const content = `
+  ${sectionTitle('Resumen semanal de ' + opts.restaurantName)}
+  <p style="margin:16px 0 0;color:#6b7280;font-size:14px;">Asi le fue a tu restaurante esta semana.</p>
+  <table style="width:100%;margin-top:20px;border-collapse:collapse;">
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Escaneos QR</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;">${opts.qrScans}</td></tr>
+    <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px;">Visitas al menu</td><td style="padding:12px 0;border-bottom:1px solid #f3f4f6;font-weight:700;font-size:20px;text-align:right;">${opts.menuVisits}</td></tr>
+    <tr><td style="padding:12px 0;${opts.isPro ? 'border-bottom:1px solid #f3f4f6;' : ''}color:#6b7280;font-size:14px;">Emails capturados</td><td style="padding:12px 0;${opts.isPro ? 'border-bottom:1px solid #f3f4f6;' : ''}font-weight:700;font-size:20px;text-align:right;">${opts.newEmails}</td></tr>
+    ${proMetrics}
+  </table>
+  ${topDishesSection}
+  ${proUpsell}
+  ${ctaButton('Ver mi dashboard', siteUrl + '/dashboard')}`
+  return baseLayout(content)
+}
