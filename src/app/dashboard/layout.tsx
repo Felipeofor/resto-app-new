@@ -21,6 +21,7 @@ import {
   CreditCard,
   Lock,
   LayoutDashboard,
+  Wallet,
 } from 'lucide-react';
 import { RestaurantProvider, useRestaurant } from '@/lib/context/restaurant-context';
 import RestaurantSelector from './components/RestaurantSelector';
@@ -103,6 +104,13 @@ function DashboardInner({
       href: '/dashboard/metrics',
       icon: BarChart3,
       requiresPro: true,
+      isSuperAdminOnly: false,
+    },
+    {
+      label: 'Finanzas',
+      href: '/dashboard/finance',
+      icon: Wallet,
+      requiresPro: false,
       isSuperAdminOnly: false,
     },
     {

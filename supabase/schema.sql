@@ -143,6 +143,39 @@ CREATE TABLE IF NOT EXISTS ai_usage (
 );
 
 -- ============================================
+-- FINANCE TABLES
+-- ============================================
+
+DO $$ BEGIN CREATE TYPE finance_type AS ENUM ('income', 'expense'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE TABLE IF NOT EXISTS finance_categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  type finance_type NOT NULL,
+  icon TEXT DEFAULT '📦',
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  UNIQUE(restaurant_id, name, type)
+);
+
+CREATE TABLE IF NOT EXISTS finance_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  category_id UUID REFERENCES finance_categories(id) ON DELETE SET NULL,
+  type finance_type NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  description TEXT,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE INDEX IF NOT EXISTS idx_finance_transactions_restaurant_id ON finance_transactions(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_finance_transactions_date ON finance_transactions(date);
+CREATE INDEX IF NOT EXISTS idx_finance_categories_restaurant_id ON finance_categories(restaurant_id);
+
+-- ============================================
 -- INDEXES
 -- ============================================
 
