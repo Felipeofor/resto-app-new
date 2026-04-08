@@ -237,10 +237,10 @@ export async function POST(request: NextRequest) {
       try {
         parsedItems = await callClaudeAPI(images)
         aiProvider = 'claude'
-      } catch (error) {
+      } catch (error: any) {
         console.error('Claude API error:', error)
         return NextResponse.json(
-          { error: 'Error procesando imágenes con IA. Intenta de nuevo.' },
+          { error: `Error de IA: ${error.message || 'Intenta de nuevo.'}` },
           { status: 500 }
         )
       }
