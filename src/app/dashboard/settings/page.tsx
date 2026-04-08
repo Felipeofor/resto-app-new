@@ -274,7 +274,8 @@ export default function SettingsPage() {
     setError(null);
     try {
       const sb = createClient();
-      const updateData: Record<string, unknown> = { ...settings };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateData = { ...settings } as any;
 
       if (logoFile) {
         const ext = logoFile.type.split('/')[1];

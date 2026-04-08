@@ -198,8 +198,8 @@ export default function DemoAdminPage() {
           <p className="text-sm font-semibold text-white truncate">
             {data.restaurant.name}
           </p>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-400/20 text-yellow-300 mt-1">
-            Plan Pro
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-400/20 text-amber-300 mt-1">
+            Vista Demo
           </div>
         </div>
 
@@ -789,8 +789,8 @@ function EmailsSection({ data }: { data: DemoData }) {
           <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{data.emails.length}</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border-l-4 border-purple-500">
-          <p className="text-gray-600 text-sm font-medium">Plan Actual</p>
-          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">Pro - Ilimitado</p>
+          <p className="text-gray-600 text-sm font-medium">Modo</p>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">Demo</p>
         </div>
       </div>
 

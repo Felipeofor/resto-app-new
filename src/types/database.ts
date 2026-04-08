@@ -56,6 +56,14 @@ export type Database = {
           transfer_bank: string | null
           transfer_cbu: string | null
           min_order_amount: number | null
+          address: string | null
+          phone: string | null
+          primary_color: string | null
+          default_view: 'list' | 'grid' | null
+          incentive_type: 'discount' | 'free_item' | 'exclusive' | 'loyalty' | 'none' | null
+          incentive_title: string | null
+          incentive_description: string | null
+          incentive_code: string | null
           created_at: string
           updated_at: string
         }
@@ -80,6 +88,14 @@ export type Database = {
           transfer_bank?: string | null
           transfer_cbu?: string | null
           min_order_amount?: number | null
+          address?: string | null
+          phone?: string | null
+          primary_color?: string | null
+          default_view?: 'list' | 'grid' | null
+          incentive_type?: 'discount' | 'free_item' | 'exclusive' | 'loyalty' | 'none' | null
+          incentive_title?: string | null
+          incentive_description?: string | null
+          incentive_code?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -104,6 +120,14 @@ export type Database = {
           transfer_bank?: string | null
           transfer_cbu?: string | null
           min_order_amount?: number | null
+          address?: string | null
+          phone?: string | null
+          primary_color?: string | null
+          default_view?: 'list' | 'grid' | null
+          incentive_type?: 'discount' | 'free_item' | 'exclusive' | 'loyalty' | 'none' | null
+          incentive_title?: string | null
+          incentive_description?: string | null
+          incentive_code?: string | null
           created_at?: string
           updated_at?: string
         }
