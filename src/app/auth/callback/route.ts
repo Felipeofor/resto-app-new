@@ -7,8 +7,8 @@ import { restaurantOwnerWelcomeTemplate } from '@/lib/email/templates'
  * Handles Supabase OAuth & email confirmation callbacks.
  *
  * Two flows:
- *  1. OAuth / PKCE  -†’ ?code=...
- *  2. Email confirm -†’ ?token_hash=...&type=signup  (or recovery, invite, etc.)
+ *  1. OAuth / PKCE  --- ?code=...
+ *  2. Email confirm --- ?token_hash=...&type=signup  (or recovery, invite, etc.)
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
           await resend.emails.send({
             from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
             to: user.email!,
-            subject: 'Â¡Bienvenido a RestoQR! Tu panel estÃ¡ listo ðŸš-',
+            subject: 'Â¡Bienvenido a RestoQR! Tu panel estÃ¡ listo ----',
             html: restaurantOwnerWelcomeTemplate({
               ownerName,
               dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://resto-virid.vercel.app'}/dashboard`,

@@ -162,7 +162,7 @@ export function welcomeEmailTemplate({
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
         ${featureItem('📋', 'Menú completo', 'Todos los platos con fotos, descripciones y precios')}
         ${featureItem('🛒', 'Pedidos online', 'Hacé tu pedido y elegí el método de pago')}
-        ${featureItem('�--', 'Novedades', 'Te avisamos de promociones y platos especiales')}
+        ${featureItem('----', 'Novedades', 'Te avisamos de promociones y platos especiales')}
       </table>
 
       ${ctaButton('Ver el menú ahora', menuUrl)}
@@ -216,7 +216,7 @@ export function restaurantOwnerWelcomeTemplate({
   const greeting = ownerName ? `Hola, <strong>${ownerName}</strong>` : 'Hola'
 
   const content = `
-  ${heroHeader('�-', '¡Tu cuenta está lista!', 'Bienvenido a RestoQR --- el menú digital que impulsa tu negocio')}
+  ${heroHeader('----', '¡Tu cuenta está lista!', 'Bienvenido a RestoQR --- el menú digital que impulsa tu negocio')}
 
   <tr>
     <td class="body-pad" style="padding:36px 32px;">
@@ -288,7 +288,7 @@ export function passwordResetTemplate({
   const greeting = ownerName ? `Hola, <strong>${ownerName}</strong>` : 'Hola'
 
   const content = `
-  ${heroHeader('�--', 'Recuperá tu contraseña', 'Recibimos una solicitud para resetear tu acceso')}
+  ${heroHeader('----', 'Recuperá tu contraseña', 'Recibimos una solicitud para resetear tu acceso')}
 
   <tr>
     <td class="body-pad" style="padding:36px 32px;">
@@ -305,7 +305,7 @@ export function passwordResetTemplate({
         style="background:#fef3c7;border-radius:12px;margin-top:24px;border:1px solid #fde68a;">
         <tr>
           <td style="padding:16px 20px;">
-            <p style="margin:0;font-size:13px;color:#92400e;font-weight:700;">-��️ Importante</p>
+            <p style="margin:0;font-size:13px;color:#92400e;font-weight:700;">---️ Importante</p>
             <p style="margin:6px 0 0;font-size:13px;color:#78350f;line-height:1.5;">
               Este enlace es válido por <strong>60 minutos</strong> y solo puede usarse una vez.
               Si no solicitaste este cambio, ignorá este email --- tu contraseña actual seguirá funcionando.
@@ -408,7 +408,7 @@ export function orderConfirmationTemplate({
   </table>`
 
   const content = `
-  ${heroHeader('-��', '¡Pedido recibido!', `Pedido #${orderNumber} --- ${restaurantName}`)}
+  ${heroHeader('---', '¡Pedido recibido!', `Pedido #${orderNumber} --- ${restaurantName}`)}
 
   <tr>
     <td class="body-pad" style="padding:36px 32px;">
@@ -460,7 +460,7 @@ export function orderConfirmationTemplate({
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               ${infoRow('📍', 'Dirección', deliveryAddress)}
               ${infoRow('💳', 'Método de pago', paymentMethod === 'cash' ? 'Efectivo' : 'Transferencia bancaria')}
-              ${infoRow('�-�', 'Número de pedido', `#${orderNumber}`)}
+              ${infoRow('----', 'Número de pedido', `#${orderNumber}`)}
             </table>
           </td>
         </tr>

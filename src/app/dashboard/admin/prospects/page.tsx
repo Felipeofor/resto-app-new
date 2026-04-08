@@ -6,7 +6,7 @@ import {
   Search,
   Phone,
   MapPin,
-  Instagram,
+  AtSign,
   Mail,
   MessageCircle,
   Edit3,
@@ -376,7 +376,7 @@ export default function ProspectsPage() {
                       )}
                       {p.instagram && (
                         <span className="flex items-center gap-1">
-                          <Instagram className="w-3 h-3" />@{p.instagram.replace('@', '')}
+                          <AtSign className="w-3 h-3" />@{p.instagram.replace('@', '')}
                         </span>
                       )}
                     </div>

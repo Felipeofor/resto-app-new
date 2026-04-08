@@ -506,7 +506,7 @@ export default function SettingsPage() {
               name="description"
               value={settings.description || ''}
               onChange={set}
-              placeholder="AutÃ©ntica parrilla argentina desde 1985--¦"
+              placeholder="AutÃ©ntica parrilla argentina desde 1985---"
               rows={3}
               className={inputCls}
             />
@@ -649,7 +649,7 @@ export default function SettingsPage() {
                     name="transfer_bank"
                     value={settings.transfer_bank || ''}
                     onChange={set}
-                    placeholder="Mercado Pago, Santander--¦"
+                    placeholder="Mercado Pago, Santander---"
                     className={inputCls}
                   />
                 </Field>
@@ -771,7 +771,7 @@ export default function SettingsPage() {
                 { value: 'discount', emoji: 'ğŸ·ï¸', label: 'Descuento' },
                 { value: 'free_item', emoji: 'ğŸ', label: 'Producto gratis' },
                 { value: 'exclusive', emoji: 'ğŸ‘‘', label: 'Acceso exclusivo' },
-                { value: 'loyalty', emoji: '-­-', label: 'Puntos / Fidelidad' },
+                { value: 'loyalty', emoji: '---', label: 'Puntos / Fidelidad' },
               ] as const).map((opt) => (
                 <button
                   key={opt.value}
@@ -844,7 +844,7 @@ export default function SettingsPage() {
                 <div className="w-9 h-9 rounded-lg bg-purple-500 flex items-center justify-center text-lg flex-shrink-0">
                   {settings.incentive_type === 'discount' ? 'ğŸ·ï¸'
                     : settings.incentive_type === 'free_item' ? 'ğŸ'
-                    : settings.incentive_type === 'exclusive' ? 'ğŸ‘‘' : '-­-'}
+                    : settings.incentive_type === 'exclusive' ? 'ğŸ‘‘' : '---'}
                 </div>
                 <div>
                   <p className="font-black text-gray-900">{settings.incentive_title}</p>
@@ -914,14 +914,14 @@ export default function SettingsPage() {
             <div>
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Plan actual</p>
               <p className="text-xl font-bold text-purple-700 mt-0.5">
-                {settings.plan === 'pro' ? '-­- Pro' : 'Gratuito'}
+                {settings.plan === 'pro' ? '--- Pro' : 'Gratuito'}
               </p>
             </div>
             <Link
               href="/dashboard/subscription"
               className="text-sm text-purple-600 font-semibold hover:text-purple-800 transition-colors"
             >
-              Ver planes -†’
+              Ver planes ---
             </Link>
           </div>
         </Section>
