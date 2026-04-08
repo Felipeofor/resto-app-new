@@ -40,6 +40,7 @@ export default function SubscriptionPage() {
   const [profile, setProfile] = useState<ProfileData>({ full_name: '', email: '', phone: '' });
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [proPrice, setProPrice] = useState(5000);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const isPro = currentRestaurant?.plan === 'pro';
 
@@ -91,12 +92,13 @@ export default function SubscriptionPage() {
   };
 
   const handleSubmitPayment = async () => {
+    setFormError(null);
     if (!currentRestaurant || !receiptFile) {
-      alert('Por favor subí el comprobante de transferencia');
+      setFormError('Por favor subí el comprobante de transferencia');
       return;
     }
     if (!profile.full_name || !profile.email || !profile.phone) {
-      alert('Por favor completá tus datos de perfil primero');
+      setFormError('Por favor completá tus datos de perfil primero');
       return;
     }
 
@@ -120,7 +122,7 @@ export default function SubscriptionPage() {
         .upload(fileName, receiptFile);
 
       if (uploadError) {
-        alert('Error al subir el comprobante');
+        setFormError('Error al subir el comprobante');
         setUploading(false);
         return;
       }
@@ -140,7 +142,7 @@ export default function SubscriptionPage() {
 
       if (error) {
         console.error('Payment creation error:', error);
-        alert('Error al registrar el pago');
+        setFormError('Error al registrar el pago');
       } else {
         setReceiptFile(null);
         setShowPaymentForm(false);
@@ -148,7 +150,7 @@ export default function SubscriptionPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('Error inesperado');
+      setFormError('Error inesperado');
     } finally {
       setUploading(false);
     }
@@ -346,6 +348,12 @@ export default function SubscriptionPage() {
               )}
             </div>
           </div>
+
+          {formError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-sm text-red-700">{formError}</p>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <button
