@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Lightbox } from './Lightbox'
 import { AddToCartButton } from './AddToCartButton'
+import { FoodImage } from './FoodImage'
 
 interface Category {
   id: string
@@ -24,6 +25,8 @@ interface PhotoGridViewProps {
   categories: Category[]
   selectedCategory: string | null
   onCategorySelect: (categoryId: string | null) => void
+  logoUrl?: string | null
+  primaryColor?: string
 }
 
 export function PhotoGridView({
@@ -31,6 +34,8 @@ export function PhotoGridView({
   categories,
   selectedCategory,
   onCategorySelect,
+  logoUrl,
+  primaryColor = '#f97316',
 }: PhotoGridViewProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [selectedItemIndex, setSelectedItemIndex] = useState(0)
@@ -66,9 +71,10 @@ export function PhotoGridView({
           onClick={() => onCategorySelect(null)}
           className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
             selectedCategory === null
-              ? 'bg-orange-500 text-white'
+              ? 'text-white'
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
           }`}
+          style={selectedCategory === null ? { background: primaryColor } : undefined}
         >
           Todos
         </button>
@@ -78,9 +84,10 @@ export function PhotoGridView({
             onClick={() => onCategorySelect(category.id)}
             className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
               selectedCategory === category.id
-                ? 'bg-orange-500 text-white'
+                ? 'text-white'
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
+            style={selectedCategory === category.id ? { background: primaryColor } : undefined}
           >
             {category.name}
           </button>
@@ -105,22 +112,18 @@ export function PhotoGridView({
               >
                 {/* Image or placeholder */}
                 <div className="relative h-36 md:h-44 bg-orange-50 overflow-hidden flex-shrink-0">
-                  {item.image_url ? (
-                    <button
-                      onClick={() => imgIndex >= 0 && openLightbox(imgIndex)}
-                      className="w-full h-full"
-                    >
-                      <img
-                        src={item.image_url}
-                        alt={item.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    </button>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">
-                      🍽️
-                    </div>
-                  )}
+                  <button
+                    onClick={() => imgIndex >= 0 && openLightbox(imgIndex)}
+                    className={`w-full h-full ${imgIndex >= 0 ? 'cursor-pointer' : 'cursor-default'}`}
+                  >
+                    <FoodImage
+                      src={item.image_url}
+                      alt={item.name}
+                      logoUrl={logoUrl}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      fallbackClassName="w-full h-full"
+                    />
+                  </button>
                 </div>
 
                 {/* Info */}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { welcomeEmailTemplate } from '@/lib/email/templates'
 
 interface RegisterEmailRequest {
   restaurantId: string
@@ -86,44 +87,22 @@ export async function POST(request: NextRequest) {
 
         const restaurantName = restaurant?.name || 'Nuestro restaurante'
 
+        // Get restaurant slug for the menu URL
+        const { data: restaurantFull } = await supabase
+          .from('restaurants')
+          .select('slug')
+          .eq('id', restaurantId)
+          .single()
+
         await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'noreply@restoqr.app',
+          from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
           to: email,
-          subject: `Bienvenido a ${restaurantName}`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta charset="UTF-8">
-                <style>
-                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; line-height: 1.6; color: #333; }
-                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { text-align: center; margin-bottom: 30px; }
-                  .header h1 { color: #6d28d9; margin: 0; }
-                  .content { background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-                  .footer { text-align: center; font-size: 12px; color: #999; margin-top: 30px; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <div class="header">
-                    <h1>Bienvenido</h1>
-                  </div>
-                  <div class="content">
-                    <p>Hola${name ? ` ${name}` : ''},</p>
-                    <p>Gracias por registrarte en el menú digital de <strong>${restaurantName}</strong>.</p>
-                    <p>Estamos emocionados de compartir nuestros platos especiales contigo. Pronto recibirás noticias sobre promociones y nuevos platos.</p>
-                    <p>Si tienes preguntas, no dudes en contactarnos.</p>
-                    <p><strong>¡Esperamos verte pronto!</strong></p>
-                  </div>
-                  <div class="footer">
-                    <p>Este es un email automático. Por favor no respondas a esta dirección.</p>
-                    <p>&copy; 2026 ${restaurantName}. Todos los derechos reservados.</p>
-                  </div>
-                </div>
-              </body>
-            </html>
-          `,
+          subject: `¡Bienvenido a ${restaurantName}! 🍽️`,
+          html: welcomeEmailTemplate({
+            customerName: name,
+            restaurantName,
+            restaurantSlug: restaurantFull?.slug ?? restaurantName.toLowerCase().replace(/\s+/g, '-'),
+          }),
         })
       } catch (emailError) {
         console.error('Error sending welcome email:', emailError)

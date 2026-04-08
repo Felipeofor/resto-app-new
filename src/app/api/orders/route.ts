@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { orderConfirmationTemplate } from '@/lib/email/templates';
 
 interface OrderItem {
   id: string;
@@ -146,6 +147,52 @@ export async function POST(request: NextRequest) {
         name: customerInfo.fullName,
         registered_via: 'manual' as const,
       }).then(() => {});  // Ignore duplicate errors
+    }
+
+    // Send order confirmation email if customer provided email and Resend is configured
+    if (customerInfo.email && process.env.RESEND_API_KEY) {
+      try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        // Fetch restaurant info for email
+        const { data: restaurant } = await supabase
+          .from('restaurants')
+          .select('name, slug, transfer_alias, transfer_holder')
+          .eq('id', restaurantId)
+          .single();
+
+        const restaurantName = restaurant?.name || 'El restaurante';
+        const restaurantSlug = restaurant?.slug || '';
+
+        await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+          to: customerInfo.email,
+          subject: `¡Pedido #${orderNumber} recibido en ${restaurantName}! ✅`,
+          html: orderConfirmationTemplate({
+            customerName: customerInfo.fullName,
+            restaurantName,
+            restaurantSlug,
+            orderNumber,
+            items: items.map((i) => ({
+              name: i.name,
+              quantity: i.quantity,
+              price: i.price,
+              notes: i.notes || undefined,
+            })),
+            subtotal,
+            deliveryFee,
+            total,
+            paymentMethod,
+            deliveryAddress: customerInfo.address,
+            transferAlias: restaurant?.transfer_alias ?? null,
+            transferHolder: restaurant?.transfer_holder ?? null,
+          }),
+        });
+      } catch (emailErr) {
+        console.error('Error sending order confirmation email:', emailErr);
+        // Don't fail the order if email fails
+      }
     }
 
     return NextResponse.json(

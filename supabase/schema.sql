@@ -9,12 +9,12 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Create ENUM types
-CREATE TYPE user_role AS ENUM ('super_admin', 'admin', 'user');
-CREATE TYPE plan_type AS ENUM ('free', 'pro');
-CREATE TYPE registration_method AS ENUM ('manual', 'google');
-CREATE TYPE event_type AS ENUM ('visit', 'qr_scan', 'email_register');
-CREATE TYPE member_role AS ENUM ('owner', 'editor', 'viewer');
+-- Create ENUM types (idempotent — safe to re-run)
+DO $$ BEGIN CREATE TYPE user_role AS ENUM ('super_admin', 'admin', 'user'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE plan_type AS ENUM ('free', 'pro'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE registration_method AS ENUM ('manual', 'google'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE event_type AS ENUM ('visit', 'qr_scan', 'email_register'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE member_role AS ENUM ('owner', 'editor', 'viewer'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ============================================
 -- CORE TABLES
@@ -425,9 +425,17 @@ CREATE TRIGGER update_menu_items_updated_at
 -- ORDERS & DELIVERY
 -- ============================================
 
-CREATE TYPE order_status AS ENUM ('pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled');
-CREATE TYPE payment_method AS ENUM ('cash', 'transfer');
-CREATE TYPE payment_status AS ENUM ('pending', 'uploaded', 'confirmed', 'rejected');
+DO $$ BEGIN
+  CREATE TYPE order_status AS ENUM ('pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE payment_method AS ENUM ('cash', 'transfer');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE payment_status AS ENUM ('pending', 'uploaded', 'confirmed', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -513,6 +521,21 @@ ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS transfer_bank TEXT;
 ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS transfer_cbu TEXT;
 ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS min_order_amount DECIMAL(10,2) DEFAULT 0;
 
+-- Add restaurant address and public phone
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS phone TEXT;
+
+-- Visual customization: brand color + default menu view
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS primary_color TEXT DEFAULT '#f97316';
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS default_view TEXT DEFAULT 'list';
+
+-- Email gate incentive (what benefit the customer gets for sharing their email)
+-- incentive_type: 'discount' | 'free_item' | 'exclusive' | 'loyalty' | 'none'
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS incentive_type TEXT DEFAULT 'discount';
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS incentive_title TEXT DEFAULT '10% de descuento';
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS incentive_description TEXT DEFAULT 'En tu próxima visita o pedido online';
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS incentive_code TEXT; -- optional promo code to show
+
 -- ============================================
 -- PROFILES: add phone for restaurant owners
 -- ============================================
@@ -524,7 +547,9 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT;
 -- Tracks Pro plan payment requests from restaurant owners
 -- Super admin reviews and approves/rejects
 
-CREATE TYPE subscription_payment_status AS ENUM ('pending', 'approved', 'rejected');
+DO $$ BEGIN
+  CREATE TYPE subscription_payment_status AS ENUM ('pending', 'approved', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE TABLE IF NOT EXISTS subscription_payments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

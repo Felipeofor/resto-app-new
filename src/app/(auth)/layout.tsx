@@ -15,7 +15,7 @@ export default function AuthLayout({
             <UtensilsCrossed className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
-            RestaurantHub
+            RestoQR
           </h1>
         </div>
       </header>
@@ -27,7 +27,7 @@ export default function AuthLayout({
 
       {/* Footer */}
       <footer className="bg-white border-t border-purple-100 py-4 text-center text-sm text-gray-600">
-        <p>© 2026 RestaurantHub. Todos los derechos reservados.</p>
+        <p>© 2026 RestoQR. Todos los derechos reservados.</p>
       </footer>
     </div>
   );

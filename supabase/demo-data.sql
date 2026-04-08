@@ -39,16 +39,17 @@ BEGIN
   UPDATE profiles SET role = 'admin', full_name = 'Carlos Demo', phone = '+54 9 11 5555-1234' WHERE id = demo_user_id;
 
   -- Create restaurant
-  INSERT INTO restaurants (id, owner_id, name, slug, description, plan, require_email, welcome_message, discount_text, is_active, delivery_enabled, delivery_fee, whatsapp_number, transfer_alias, transfer_holder, transfer_bank, transfer_cbu, min_order_amount)
+  INSERT INTO restaurants (id, owner_id, name, slug, description, logo_url, plan, require_email, welcome_message, discount_text, is_active, delivery_enabled, delivery_fee, whatsapp_number, transfer_alias, transfer_holder, transfer_bank, transfer_cbu, min_order_amount, primary_color, default_view, incentive_type, incentive_title, incentive_description, incentive_code)
   VALUES (
     rest_id,
     demo_user_id,
     'La Parrilla de Don Carlos',
     'don-carlos',
     'Auténtica parrilla argentina con los mejores cortes de carne a la brasa. Tradición y sabor desde 1985.',
+    'https://resto-virid.vercel.app/demo-logo-don-carlos.svg',
     'pro',
-    false,
-    '¡Bienvenido a La Parrilla de Don Carlos! Explora nuestra carta y hacé tu pedido.',
+    true,
+    '¡Bienvenido a La Parrilla de Don Carlos!',
     '🔥 Promo: 2x1 en empanadas los martes',
     true,
     true,
@@ -58,7 +59,13 @@ BEGIN
     'Carlos Alberto Gómez',
     'Banco Galicia',
     '0070123456789012345678',
-    1500
+    1500,
+    '#c0392b',
+    'list',
+    'discount',
+    '10% de descuento',
+    'En tu primer pedido online. Válido solo hoy.',
+    'BIENVENIDO10'
   );
 
   -- Categories

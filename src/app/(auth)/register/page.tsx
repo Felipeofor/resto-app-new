@@ -3,257 +3,318 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, Loader2, Eye, EyeOff, Globe, Shield } from 'lucide-react';
+import { Mail, Lock, User, Loader2, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import { signUp, signInWithGoogle } from '@/lib/auth/actions';
 
+/* ── Google "G" icon ────────────────────────────────────── */
+function GoogleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" className="flex-shrink-0">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+  );
+}
+
+/* ── Password strength ──────────────────────────────────── */
+function passwordStrength(p: string) {
+  if (!p) return { score: 0, label: '', color: '' };
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (p.length >= 12) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  if (s <= 1) return { score: s, label: 'Muy débil', color: 'bg-red-500' };
+  if (s === 2) return { score: s, label: 'Débil', color: 'bg-orange-400' };
+  if (s === 3) return { score: s, label: 'Regular', color: 'bg-yellow-400' };
+  if (s === 4) return { score: s, label: 'Fuerte', color: 'bg-green-400' };
+  return { score: s, label: 'Muy fuerte', color: 'bg-green-600' };
+}
+
+/* ── Error translation ──────────────────────────────────── */
+function translateSupabaseError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes('user already registered') || m.includes('already been registered'))
+    return 'Ya existe una cuenta con ese correo. ¿Querés iniciar sesión?';
+  if (m.includes('invalid email') || m.includes('unable to validate'))
+    return 'El formato del correo no es válido.';
+  if (m.includes('password') && m.includes('6'))
+    return 'La contraseña debe tener al menos 6 caracteres.';
+  if (m.includes('weak password') || m.includes('password should'))
+    return 'La contraseña es muy débil. Usá letras, números y símbolos.';
+  if (m.includes('rate limit') || m.includes('too many'))
+    return 'Demasiados intentos. Esperá unos minutos e intentá de nuevo.';
+  if (m.includes('network') || m.includes('fetch'))
+    return 'Error de conexión. Revisá tu internet e intentá de nuevo.';
+  return msg;
+}
+
+/* ── Field wrapper ──────────────────────────────────────── */
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+      <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+      {msg}
+    </p>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Register Page
+══════════════════════════════════════════════════════════ */
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'admin',
-  });
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
+  const [touched, setTouched] = useState({ fullName: false, email: false, password: false, confirmPassword: false });
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const strength = passwordStrength(form.password);
+
+  /* Per-field errors (only shown after field is touched) */
+  const fieldErrors = {
+    fullName: !form.fullName.trim()
+      ? 'El nombre es requerido'
+      : form.fullName.trim().length < 3
+        ? 'Debe tener al menos 3 caracteres'
+        : null,
+    email: !form.email
+      ? 'El correo es requerido'
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+        ? 'Ingresá un correo válido (ej: usuario@dominio.com)'
+        : null,
+    password: !form.password
+      ? 'La contraseña es requerida'
+      : form.password.length < 6
+        ? 'Mínimo 6 caracteres'
+        : null,
+    confirmPassword: !form.confirmPassword
+      ? 'Confirmá tu contraseña'
+      : form.confirmPassword !== form.password
+        ? 'Las contraseñas no coinciden'
+        : null,
+  };
+
+  const isFormValid = Object.values(fieldErrors).every((e) => e === null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    setError(null);
-    setValidationError(null);
+    setForm((p) => ({ ...p, [name]: value }));
+    setServerError(null);
   };
 
-  const validateForm = (): boolean => {
-    if (!formData.fullName.trim()) {
-      setValidationError('El nombre completo es requerido');
-      return false;
-    }
-
-    if (formData.fullName.trim().length < 3) {
-      setValidationError('El nombre debe tener al menos 3 caracteres');
-      return false;
-    }
-
-    if (!formData.email.includes('@')) {
-      setValidationError('Ingresa un correo válido');
-      return false;
-    }
-
-    if (formData.password.length < 6) {
-      setValidationError('La contraseña debe tener al menos 6 caracteres');
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setValidationError('Las contraseñas no coinciden');
-      return false;
-    }
-
-    return true;
+  const handleBlur = (field: keyof typeof touched) => {
+    setTouched((p) => ({ ...p, [field]: true }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const touchAll = () =>
+    setTouched({ fullName: true, email: true, password: true, confirmPassword: true });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    touchAll();
+    if (!isFormValid) return;
 
     setLoading(true);
-    setError(null);
-
+    setServerError(null);
     try {
-      const result = await signUp(formData.email, formData.password, formData.fullName);
+      const result = await signUp(form.email.trim().toLowerCase(), form.password, form.fullName.trim());
       if (result.error) {
-        setError(result.error);
+        setServerError(translateSupabaseError(result.error));
       } else {
         router.push('/dashboard');
       }
-    } catch (err) {
-      setError('Error al crear la cuenta. Por favor, intenta nuevamente.');
+    } catch {
+      setServerError('Error al crear la cuenta. Intentá de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignUp = async () => {
-    setLoading(true);
-    setError(null);
-
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    setServerError(null);
     try {
       await signInWithGoogle();
-    } catch (err) {
-      setError('Error al registrarse con Google.');
-    } finally {
-      setLoading(false);
+      // signInWithGoogle() calls redirect() internally, so we won't reach here
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      if (!msg.includes('NEXT_REDIRECT')) {
+        setServerError('Error al conectar con Google. Intentá de nuevo.');
+        setGoogleLoading(false);
+      }
     }
+  };
+
+  /* Border/ring color helper */
+  const inputStatus = (field: keyof typeof fieldErrors) => {
+    if (!touched[field]) return 'border-gray-300 focus:ring-purple-500';
+    if (fieldErrors[field]) return 'border-red-400 focus:ring-red-400 bg-red-50';
+    return 'border-green-400 focus:ring-green-400 bg-green-50/30';
   };
 
   return (
-    <div className="space-y-6">
-      {/* Card */}
+    <div className="space-y-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 border border-purple-100">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Crear Cuenta</h2>
-        <p className="text-gray-600 mb-8">Únete a RestaurantHub y gestiona tu restaurante</p>
+        <h2 className="text-3xl font-bold text-gray-900 mb-1">Crear Cuenta</h2>
+        <p className="text-gray-500 text-sm mb-7">
+          Gestioná tu restaurante con <span className="font-semibold text-purple-600">RestoQR</span>
+        </p>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+        {/* Server error */}
+        {serverError && (
+          <div className="mb-5 flex items-start gap-2 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700">{serverError}</p>
           </div>
         )}
 
-        {/* Validation Error */}
-        {validationError && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-700">{validationError}</p>
-          </div>
-        )}
+        {/* Google */}
+        <button
+          type="button"
+          onClick={handleGoogle}
+          disabled={loading || googleLoading}
+          className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-gray-700 rounded-lg transition-all mb-5"
+        >
+          {googleLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : <GoogleIcon />}
+          <span>{googleLoading ? 'Conectando...' : 'Registrarse con Google'}</span>
+        </button>
 
-        {/* Registration Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Full Name Field */}
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex-1 border-t border-gray-200" />
+          <span className="text-xs text-gray-400 font-medium">o con email y contraseña</span>
+          <div className="flex-1 border-t border-gray-200" />
+        </div>
+
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          {/* Full Name */}
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1.5">
               Nombre Completo
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+              <User className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
               <input
                 type="text"
                 id="fullName"
                 name="fullName"
-                value={formData.fullName}
+                value={form.fullName}
                 onChange={handleChange}
-                placeholder="Juan García López"
-                required
+                onBlur={() => handleBlur('fullName')}
+                placeholder="Juan García"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-50 transition-colors ${inputStatus('fullName')}`}
               />
             </div>
+            {touched.fullName && <FieldError msg={fieldErrors.fullName ?? undefined} />}
           </div>
 
-          {/* Email Field */}
+          {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
               Correo Electrónico
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
               <input
                 type="email"
                 id="email"
                 name="email"
-                value={formData.email}
+                value={form.email}
                 onChange={handleChange}
-                placeholder="ejemplo@correo.com"
-                required
+                onBlur={() => handleBlur('email')}
+                placeholder="tu@correo.com"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-50 transition-colors ${inputStatus('email')}`}
               />
             </div>
+            {touched.email && <FieldError msg={fieldErrors.email ?? undefined} />}
           </div>
 
-          {/* Password Field */}
+          {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
               Contraseña
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
-                value={formData.password}
+                value={form.password}
                 onChange={handleChange}
-                placeholder="••••••••"
-                required
+                onBlur={() => handleBlur('password')}
+                placeholder="Mínimo 6 caracteres"
                 disabled={loading}
-                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                className={`w-full pl-10 pr-10 py-2.5 border rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-50 transition-colors ${inputStatus('password')}`}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600">
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            {/* Strength bar */}
+            {form.password.length > 0 && (
+              <div className="mt-2">
+                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
+                    style={{ width: `${(strength.score / 5) * 100}%` }}
+                  />
+                </div>
+                <p className={`text-xs mt-1 ${strength.score >= 4 ? 'text-green-600' : strength.score >= 3 ? 'text-yellow-600' : 'text-red-500'}`}>
+                  {strength.label}
+                </p>
+              </div>
+            )}
+            {touched.password && <FieldError msg={fieldErrors.password ?? undefined} />}
           </div>
 
-          {/* Confirm Password Field */}
+          {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
               Confirmar Contraseña
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirm ? 'text' : 'password'}
                 id="confirmPassword"
                 name="confirmPassword"
-                value={formData.confirmPassword}
+                value={form.confirmPassword}
                 onChange={handleChange}
-                placeholder="••••••••"
-                required
+                onBlur={() => handleBlur('confirmPassword')}
+                placeholder="Repetí la contraseña"
                 disabled={loading}
-                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                className={`w-full pl-10 pr-10 py-2.5 border rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-50 transition-colors ${inputStatus('confirmPassword')}`}
               />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                disabled={loading}
-                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed"
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+              <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600">
+                {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            {touched.confirmPassword && fieldErrors.confirmPassword === null && form.confirmPassword.length > 0 && (
+              <p className="mt-1.5 text-xs text-green-600 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Las contraseñas coinciden
+              </p>
+            )}
+            {touched.confirmPassword && <FieldError msg={fieldErrors.confirmPassword ?? undefined} />}
           </div>
 
-          {/* Role Field */}
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              Tipo de Cuenta
-            </label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              disabled={true}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-            >
-              <option value="admin">Administrador de Restaurante</option>
-            </select>
-            <p className="mt-1 text-xs text-gray-500">
-              Solo se permiten administradores de restaurante. Contacta al equipo para otras opciones.
-            </p>
-          </div>
-
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            disabled={loading || googleLoading}
+            className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 mt-2"
           >
             {loading ? (
               <>
@@ -266,39 +327,17 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="my-6 flex items-center">
-          <div className="flex-1 border-t border-gray-300"></div>
-          <span className="px-3 text-sm text-gray-500">O continúa con</span>
-          <div className="flex-1 border-t border-gray-300"></div>
-        </div>
-
-        {/* Google Button */}
-        <button
-          type="button"
-          onClick={handleGoogleSignUp}
-          disabled={loading}
-          className="w-full py-2.5 px-4 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-        >
-          <Globe className="w-5 h-5" />
-          Google
-        </button>
-
-        {/* Login Link */}
         <p className="mt-6 text-center text-sm text-gray-600">
-          ¿Ya tienes cuenta?{' '}
-          <Link
-            href="/login"
-            className="text-purple-600 hover:text-purple-700 font-medium transition-colors"
-          >
+          ¿Ya tenés cuenta?{' '}
+          <Link href="/login" className="text-purple-600 hover:text-purple-700 font-semibold transition-colors">
             Iniciar sesión
           </Link>
         </p>
       </div>
 
-      {/* Footer Note */}
-      <p className="text-center text-xs text-gray-500">
-        Al crear una cuenta, aceptas nuestros términos y condiciones
+      <p className="text-center text-xs text-gray-400">
+        Al crear una cuenta, aceptás nuestros{' '}
+        <span className="underline cursor-pointer hover:text-gray-600">términos y condiciones</span>
       </p>
     </div>
   );

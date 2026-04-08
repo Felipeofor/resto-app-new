@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { restaurantOwnerWelcomeTemplate, passwordResetTemplate } from '@/lib/email/templates';
 
 export interface AuthResult {
   success: boolean;
@@ -88,6 +89,26 @@ export async function signUp(
         success: false,
         error: 'Failed to create user profile',
       };
+    }
+
+    // Send welcome email to restaurant owner via Resend
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+          to: email,
+          subject: '¡Bienvenido a RestoQR! Tu panel está listo 🚀',
+          html: restaurantOwnerWelcomeTemplate({
+            ownerName: fullName,
+            dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://resto-virid.vercel.app'}/dashboard`,
+          }),
+        });
+      } catch (emailErr) {
+        console.error('Error sending owner welcome email:', emailErr);
+        // Don't fail signup if email fails
+      }
     }
 
     return {
@@ -296,25 +317,67 @@ export async function verifyEmail(token: string): Promise<AuthResult> {
 
 /**
  * Request password reset
+ * Uses Resend with our custom template when RESEND_API_KEY is configured;
+ * falls back to Supabase built-in email otherwise.
  */
 export async function requestPasswordReset(email: string): Promise<AuthResult> {
   try {
-    const supabase = await createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const redirectTo = `${siteUrl}/auth/reset-password`;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset-password`,
-    });
+    // If Resend is configured, generate the link ourselves and send the branded email
+    if (process.env.RESEND_API_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const { createClient: createAdminSB } = await import('@supabase/supabase-js');
+        const adminSB = createAdminSB(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
+        // generateLink returns the recovery link with the embedded token
+        const { data: linkData, error: linkError } = await adminSB.auth.admin.generateLink({
+          type: 'recovery',
+          email,
+          options: { redirectTo },
+        });
+
+        if (!linkError && linkData?.properties?.action_link) {
+          const { Resend } = await import('resend');
+          const resend = new Resend(process.env.RESEND_API_KEY);
+
+          // Try to get the owner's name from the profile
+          const { data: profile } = await adminSB
+            .from('profiles')
+            .select('full_name')
+            .eq('email', email)
+            .maybeSingle();
+
+          await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+            to: email,
+            subject: 'Recuperá tu contraseña en RestoQR 🔐',
+            html: passwordResetTemplate({
+              ownerName: profile?.full_name ?? undefined,
+              resetUrl: linkData.properties.action_link,
+            }),
+          });
+
+          return { success: true };
+        }
+      } catch (customErr) {
+        console.error('Custom password reset email failed, falling back to Supabase:', customErr);
+      }
     }
 
-    return {
-      success: true,
-    };
+    // Fallback: let Supabase send its own email
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
   } catch (error) {
     return {
       success: false,

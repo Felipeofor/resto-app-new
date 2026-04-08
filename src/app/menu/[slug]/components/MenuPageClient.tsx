@@ -37,13 +37,11 @@ export function MenuPageClient({ restaurant, categories, items }: MenuPageClient
 
   if (!emailCollected) {
     return (
-      <div className="min-h-screen bg-amber-50">
-        <EmailGate
-          restaurant={restaurant}
-          onEmailSubmit={() => setEmailCollected(true)}
-          onSkip={() => setEmailCollected(true)}
-        />
-      </div>
+      <EmailGate
+        restaurant={restaurant}
+        onEmailSubmit={() => setEmailCollected(true)}
+        onSkip={() => setEmailCollected(true)}
+      />
     )
   }
 

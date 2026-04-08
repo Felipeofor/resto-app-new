@@ -6,7 +6,6 @@ import { ListView } from './ListView'
 import { PhotoGridView } from './PhotoGridView'
 import { CartButton } from './CartButton'
 import { CartDrawer } from './CartDrawer'
-import { CartProvider } from '@/lib/context/cart-context'
 import { useCart } from '@/lib/context/cart-context'
 
 interface Restaurant {
@@ -18,6 +17,8 @@ interface Restaurant {
   cover_url: string | null
   delivery_enabled?: boolean
   delivery_fee?: number
+  primary_color?: string | null
+  default_view?: 'list' | 'grid' | null
 }
 
 interface Category {
@@ -48,7 +49,9 @@ function MenuContentInner({
   categories,
   items,
 }: MenuContentProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    (restaurant.default_view as ViewMode) || 'list'
+  )
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -109,9 +112,10 @@ function MenuContentInner({
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                 viewMode === 'list'
-                  ? 'bg-orange-500 text-white shadow-md'
+                  ? 'text-white shadow-md'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
+              style={viewMode === 'list' ? { background: restaurant.primary_color || '#f97316' } : undefined}
             >
               <List className="w-5 h-5" />
               <span className="hidden sm:inline">Lista</span>
@@ -120,9 +124,10 @@ function MenuContentInner({
               onClick={() => setViewMode('grid')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                 viewMode === 'grid'
-                  ? 'bg-orange-500 text-white shadow-md'
+                  ? 'text-white shadow-md'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
+              style={viewMode === 'grid' ? { background: restaurant.primary_color || '#f97316' } : undefined}
             >
               <Grid3x3 className="w-5 h-5" />
               <span className="hidden sm:inline">Galería</span>
@@ -140,6 +145,8 @@ function MenuContentInner({
               categories={categories}
               selectedCategory={selectedCategory}
               onCategorySelect={setSelectedCategory}
+              logoUrl={restaurant.logo_url}
+              primaryColor={restaurant.primary_color || '#f97316'}
             />
           ) : (
             <PhotoGridView
@@ -147,6 +154,8 @@ function MenuContentInner({
               categories={categories}
               selectedCategory={selectedCategory}
               onCategorySelect={setSelectedCategory}
+              logoUrl={restaurant.logo_url}
+              primaryColor={restaurant.primary_color || '#f97316'}
             />
           )}
         </div>
@@ -167,9 +176,5 @@ function MenuContentInner({
 }
 
 export function MenuContent(props: MenuContentProps) {
-  return (
-    <CartProvider>
-      <MenuContentInner {...props} />
-    </CartProvider>
-  )
+  return <MenuContentInner {...props} />
 }

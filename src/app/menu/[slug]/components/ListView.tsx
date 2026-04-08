@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AddToCartButton } from './AddToCartButton'
+import { FoodImage } from './FoodImage'
 
 interface Category {
   id: string
@@ -24,6 +25,8 @@ interface ListViewProps {
   categories: Category[]
   selectedCategory: string | null
   onCategorySelect: (categoryId: string | null) => void
+  logoUrl?: string | null
+  primaryColor?: string
 }
 
 /* ── Lightbox ─────────────────────────────────────────────── */
@@ -63,10 +66,11 @@ function ImageLightbox({
         </button>
 
         {/* Image */}
-        <img
-          src={current.image_url!}
+        <FoodImage
+          src={current.image_url}
           alt={current.name}
           className="w-full max-h-[70vh] object-contain rounded-xl"
+          fallbackClassName="w-full h-64 rounded-xl"
         />
 
         {/* Info */}
@@ -108,6 +112,8 @@ export function ListView({
   categories,
   selectedCategory,
   onCategorySelect,
+  logoUrl,
+  primaryColor = '#f97316',
 }: ListViewProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [lightboxItem, setLightboxItem] = useState<MenuItem | null>(null)
@@ -151,9 +157,10 @@ export function ListView({
           onClick={() => onCategorySelect(null)}
           className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
             selectedCategory === null
-              ? 'bg-orange-500 text-white'
+              ? 'text-white'
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
           }`}
+          style={selectedCategory === null ? { background: primaryColor } : undefined}
         >
           Todos
         </button>
@@ -163,9 +170,10 @@ export function ListView({
             onClick={() => onCategorySelect(category.id)}
             className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all ${
               selectedCategory === category.id
-                ? 'bg-orange-500 text-white'
+                ? 'text-white'
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
+            style={selectedCategory === category.id ? { background: primaryColor } : undefined}
           >
             {category.name}
           </button>
@@ -194,23 +202,19 @@ export function ListView({
                     <div className="flex gap-3">
                       {/* Thumbnail — tap to enlarge */}
                       <div className="flex-shrink-0">
-                        {item.image_url ? (
-                          <button
-                            onClick={() => setLightboxItem(item)}
-                            className="w-20 h-20 rounded-lg overflow-hidden block focus:outline-none"
-                            aria-label={`Ver foto de ${item.name}`}
-                          >
-                            <img
-                              src={item.image_url}
-                              alt={item.name}
-                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                            />
-                          </button>
-                        ) : (
-                          <div className="w-20 h-20 rounded-lg bg-orange-50 flex items-center justify-center text-3xl">
-                            🍽️
-                          </div>
-                        )}
+                        <button
+                          onClick={() => item.image_url && setLightboxItem(item)}
+                          className={`w-20 h-20 rounded-lg overflow-hidden block focus:outline-none ${item.image_url ? 'cursor-pointer' : 'cursor-default'}`}
+                          aria-label={item.image_url ? `Ver foto de ${item.name}` : item.name}
+                        >
+                          <FoodImage
+                            src={item.image_url}
+                            alt={item.name}
+                            logoUrl={logoUrl}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                            fallbackClassName="w-20 h-20 rounded-lg"
+                          />
+                        </button>
                       </div>
 
                       {/* Content */}
