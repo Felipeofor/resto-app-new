@@ -26,6 +26,10 @@ body {
   color: var(--foreground);
 }
 
+button, [role="button"], a, label[for], input[type="checkbox"], input[type="radio"], select, summary {
+  cursor: pointer;
+}
+
 /* Force all form elements to have dark text */
 input, select, textarea, option {
   color: #171717;
