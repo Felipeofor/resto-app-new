@@ -189,7 +189,13 @@ export default function ProspectsPage() {
   };
 
   const getWhatsAppUrl = (phone: string, name: string) => {
-    const clean = phone.replace(/[^0-9+]/g, '');
+    let clean = phone.replace(/[^0-9]/g, '');
+    // Argentine numbers: strip leading 0 and prepend 54
+    if (clean.startsWith('0')) {
+      clean = '54' + clean.slice(1);
+    } else if (!clean.startsWith('54')) {
+      clean = '54' + clean;
+    }
     const msg = WHATSAPP_TEMPLATE.replace('tu restaurante', name);
     return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
   };
