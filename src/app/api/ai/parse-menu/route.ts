@@ -206,31 +206,30 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // TODO: Check monthly usage limit
-    // const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
-    // const { data: usage } = await supabase
-    //   .from('ai_usage')
-    //   .select('photos_processed')
-    //   .eq('restaurant_id', restaurantId)
-    //   .eq('month', currentMonth)
-    //   .single()
+    const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
+    const { data: usage } = await supabase
+      .from('ai_usage')
+      .select('id, photos_processed')
+      .eq('restaurant_id', restaurantId)
+      .eq('month', currentMonth)
+      .single()
 
-    // TODO: Fetch restaurant plan to determine limit
-    // const { data: restaurant } = await supabase
-    //   .from('restaurants')
-    //   .select('plan')
-    //   .eq('id', restaurantId)
-    //   .single()
+    // Fetch restaurant plan to determine limit
+    const { data: restaurant } = await supabase
+      .from('restaurants')
+      .select('plan')
+      .eq('id', restaurantId)
+      .single()
 
-    // const limit = restaurant?.plan === 'pro' ? 100 : 30
-    // const processed = usage?.photos_processed || 0
+    const limit = restaurant?.plan === 'pro' ? 100 : 30
+    const processed = usage?.photos_processed || 0
 
-    // if (processed + images.length > limit) {
-    //   return NextResponse.json(
-    //     { error: `Has alcanzado tu límite de ${limit} fotos procesadas este mes` },
-    //     { status: 429 }
-    //   )
-    // }
+    if (processed + images.length > limit) {
+      return NextResponse.json(
+        { error: `Has alcanzado tu límite de ${limit} fotos procesadas este mes` },
+        { status: 429 }
+      )
+    }
 
     let parsedItems: ParsedMenuItem[] | null = null
     let aiProvider: string = ''
@@ -254,20 +253,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // TODO: Update usage count in Supabase
-    // const newProcessed = processed + images.length
-    // if (usage) {
-    //   await supabase
-    //     .from('ai_usage')
-    //     .update({ photos_processed: newProcessed })
-    //     .eq('id', usage.id)
-    // } else {
-    //   await supabase.from('ai_usage').insert({
-    //     restaurant_id: restaurantId,
-    //     month: currentMonth,
-    //     photos_processed: images.length,
-    //   })
-    // }
+    // Update usage count in Supabase
+    const newProcessed = processed + images.length
+    if (usage) {
+      await supabase
+        .from('ai_usage')
+        .update({ photos_processed: newProcessed })
+        .eq('id', usage.id)
+    } else {
+      await supabase.from('ai_usage').insert({
+        restaurant_id: restaurantId,
+        month: currentMonth,
+        photos_processed: images.length,
+      })
+    }
 
     return NextResponse.json({
       items: parsedItems || [],

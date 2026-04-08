@@ -282,25 +282,58 @@ function BarChart({
   data: Array<{ date: string; count: number }>;
 }) {
   const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const chartHeight = 240;
+  // Calculate labels for Y axis
+  const yLabels = [maxCount, Math.round(maxCount / 2), 0];
 
   return (
-    <div className="flex items-end gap-1 h-80 p-4 bg-gray-50 rounded-lg overflow-x-auto">
-      {data.map((item, idx) => {
-        const height = (item.count / maxCount) * chartHeight;
-        return (
-          <div
-            key={idx}
-            className="flex-1 min-w-[20px] bg-gradient-to-t from-green-400 to-green-500 rounded-t hover:from-green-500 hover:to-green-600 transition-all relative group"
-            style={{ height: `${height}px` }}
-          >
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-              {item.count}
-              <span className="text-xs"> ({item.date})</span>
-            </div>
+    <div className="relative pt-6 pb-12 pl-12 pr-4 bg-gray-50 rounded-lg overflow-x-auto min-w-[500px]">
+      <div className="absolute top-2 left-2 text-[10px] font-semibold text-gray-400 uppercase">Cantidad</div>
+      <div className="absolute bottom-2 right-4 text-[10px] font-semibold text-gray-400 uppercase">Fecha</div>
+      
+      {/* Y-axis labels and grid lines */}
+      <div className="absolute left-0 top-6 bottom-12 w-10 flex flex-col justify-between text-xs text-gray-500 text-right pr-2">
+        {yLabels.map((lbl, i) => (
+          <span key={`y-${i}`} className="absolute w-full" style={{ top: i === 0 ? '0%' : i === 1 ? '50%' : '100%', transform: 'translateY(-50%)' }}>
+            {lbl}
+          </span>
+        ))}
+      </div>
+      
+      {/* Horizontal grid lines */}
+      <div className="absolute left-10 right-4 top-6 bottom-12 flex flex-col justify-between pointer-events-none">
+        <div className="w-full border-b border-gray-200" style={{ height: '1px' }} />
+        <div className="w-full border-b border-gray-200" style={{ height: '1px' }} />
+        <div className="w-full border-b flex-shrink-0" style={{ height: '1px', borderColor: '#cbd5e1' }} />
+      </div>
+
+      <div className="flex items-end gap-2 h-60 ml-2 border-b border-gray-300 relative z-10 w-full min-w-max pr-4">
+        {data.length === 0 ? (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+            No hay datos en este período
           </div>
-        );
-      })}
+        ) : (
+          data.map((item, idx) => {
+            const heightPercentage = (item.count / maxCount) * 100;
+            return (
+              <div key={idx} className="flex flex-col items-center flex-1 min-w-[32px] group relative h-full justify-end">
+                <div
+                  className="w-full bg-gradient-to-t from-green-400 to-green-500 rounded-t hover:from-green-500 hover:to-green-600 transition-all cursor-pointer relative"
+                  style={{ height: `${heightPercentage}%`, minHeight: item.count > 0 ? '4px' : '0' }}
+                >
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-20">
+                    {item.count}
+                    <span className="text-gray-300 ml-1">({item.date})</span>
+                  </div>
+                </div>
+                {/* X-axis date label */}
+                <span className="absolute top-full mt-2 text-[10px] text-gray-500 whitespace-nowrap transform -translate-x-1/2 left-1/2" style={{ maxWidth: '40px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {item.date}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
@@ -312,25 +345,54 @@ function LineChart({
   data: Array<{ date: string; count: number }>;
 }) {
   const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const chartHeight = 200;
+  const yLabels = [maxCount, Math.round(maxCount / 2), 0];
 
   return (
-    <div className="flex items-end gap-1 h-64 p-4 bg-gray-50 rounded-lg overflow-x-auto">
-      {data.map((item, idx) => {
-        const height = (item.count / maxCount) * chartHeight;
-        return (
-          <div
-            key={idx}
-            className="flex-1 min-w-[12px] bg-gradient-to-t from-purple-400 to-purple-500 rounded-t hover:from-purple-500 hover:to-purple-600 transition-all relative group"
-            style={{ height: `${height}px` }}
-          >
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-              {item.count}
-              <span className="text-xs"> ({item.date})</span>
-            </div>
+    <div className="relative pt-6 pb-12 pl-12 pr-4 bg-gray-50 rounded-lg overflow-x-auto min-w-[500px]">
+      <div className="absolute top-2 left-2 text-[10px] font-semibold text-gray-400 uppercase">Cantidad</div>
+      <div className="absolute bottom-2 right-4 text-[10px] font-semibold text-gray-400 uppercase">Fecha</div>
+
+      <div className="absolute left-0 top-6 bottom-12 w-10 flex flex-col justify-between text-xs text-gray-500 text-right pr-2">
+        {yLabels.map((lbl, i) => (
+          <span key={`yl-${i}`} className="absolute w-full" style={{ top: i === 0 ? '0%' : i === 1 ? '50%' : '100%', transform: 'translateY(-50%)' }}>
+            {lbl}
+          </span>
+        ))}
+      </div>
+      
+      <div className="absolute left-10 right-4 top-6 bottom-12 flex flex-col justify-between pointer-events-none">
+        <div className="w-full border-b border-gray-200" style={{ height: '1px' }} />
+        <div className="w-full border-b border-gray-200" style={{ height: '1px' }} />
+        <div className="w-full border-b flex-shrink-0" style={{ height: '1px', borderColor: '#cbd5e1' }} />
+      </div>
+
+      <div className="flex items-end gap-2 h-60 ml-2 border-b border-gray-300 relative z-10 w-full min-w-max pr-4">
+        {data.length === 0 ? (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+            No hay datos en este período
           </div>
-        );
-      })}
+        ) : (
+          data.map((item, idx) => {
+            const heightPercentage = (item.count / maxCount) * 100;
+            return (
+              <div key={idx} className="flex flex-col items-center flex-1 min-w-[32px] group relative h-full justify-end">
+                <div
+                  className="w-full bg-gradient-to-t from-purple-400 to-purple-500 rounded-t hover:from-purple-500 hover:to-purple-600 transition-all cursor-pointer relative"
+                  style={{ height: `${heightPercentage}%`, minHeight: item.count > 0 ? '4px' : '0' }}
+                >
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-20">
+                    {item.count}
+                    <span className="text-gray-300 ml-1">({item.date})</span>
+                  </div>
+                </div>
+                <span className="absolute top-full mt-2 text-[10px] text-gray-500 whitespace-nowrap transform -translate-x-1/2 left-1/2" style={{ maxWidth: '40px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {item.date}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }

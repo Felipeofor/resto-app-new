@@ -3,6 +3,8 @@
 import { useState, useCallback, useRef } from 'react'
 import { Upload, Loader, CheckCircle, AlertCircle, X, Edit2, Save } from 'lucide-react'
 import { useDropZone } from '@/lib/hooks/useDropZone'
+import { useRestaurant } from '@/lib/context/restaurant-context'
+import { createClient } from '@/lib/supabase/client'
 
 interface ParsedItem {
   category: string
@@ -19,6 +21,8 @@ interface ParsedResponse {
 }
 
 export default function AICapturePageClient() {
+  const { currentRestaurant } = useRestaurant()
+  const supabase = createClient()
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
@@ -29,23 +33,28 @@ export default function AICapturePageClient() {
   const [isSaving, setIsSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // TODO: Fetch restaurant data and usage info on mount
-  // useEffect(() => {
-  //   const fetchUsage = async () => {
-  //     const { data } = await supabase
-  //       .from('ai_usage')
-  //       .select('photos_processed')
-  //       .eq('restaurant_id', restaurantId)
-  //       .eq('month', new Date().toISOString().slice(0, 7))
-  //       .single()
+  // Load usage tracking data
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchUsage = useCallback(async () => {
+    if (!currentRestaurant) return;
+    const { data } = await supabase
+      .from('ai_usage')
+      .select('photos_processed')
+      .eq('restaurant_id', currentRestaurant.id)
+      .eq('month', new Date().toISOString().slice(0, 7))
+      .single()
 
-  //     setUsage({
-  //       processed: data?.photos_processed || 0,
-  //       limit: plan === 'pro' ? 100 : 30,
-  //     })
-  //   }
-  //   fetchUsage()
-  // }, [])
+    setUsage({
+      processed: data?.photos_processed || 0,
+      limit: currentRestaurant.plan === 'pro' ? 100 : 30,
+    })
+  }, [currentRestaurant, supabase])
+
+  import('react').then((React) => {
+    React.useEffect(() => {
+      fetchUsage()
+    }, [fetchUsage])
+  });
 
   const { isDragActive, getRootProps } = useDropZone({
     onDrop: handleDrop,
@@ -120,8 +129,8 @@ export default function AICapturePageClient() {
         )
       )
 
-      // TODO: Get restaurantId from auth context
-      const restaurantId = 'rest-001'
+      if (!currentRestaurant) throw new Error('Restaurante no seleccionado')
+      const restaurantId = currentRestaurant.id
 
       const response = await fetch('/api/ai/parse-menu', {
         method: 'POST',
@@ -174,40 +183,57 @@ export default function AICapturePageClient() {
     setError('')
 
     try {
-      // TODO: Save items to Supabase
-      // const restaurantId = 'rest-001' // From auth context
-      //
-      // for (const item of parsedItems) {
-      //   // First, ensure category exists
-      //   const { data: category } = await supabase
-      //     .from('menu_categories')
-      //     .select('id')
-      //     .eq('restaurant_id', restaurantId)
-      //     .eq('name', item.category)
-      //     .single()
-      //
-      //   let categoryId = category?.id
-      //   if (!categoryId) {
-      //     const { data: newCategory } = await supabase
-      //       .from('menu_categories')
-      //       .insert({
-      //         restaurant_id: restaurantId,
-      //         name: item.category,
-      //       })
-      //       .select('id')
-      //       .single()
-      //     categoryId = newCategory?.id
-      //   }
-      //
-      //   // Then insert the menu item
-      //   await supabase.from('menu_items').insert({
-      //     restaurant_id: restaurantId,
-      //     category_id: categoryId,
-      //     name: item.name,
-      //     description: item.description,
-      //     price: item.price,
-      //   })
-      // }
+      if (!currentRestaurant) throw new Error('Restaurante no seleccionado')
+      const restaurantId = currentRestaurant.id
+
+      // Sort existing categories to get max sort_order
+      const { data: existingCats } = await supabase
+        .from('menu_categories')
+        .select('id, name, sort_order')
+        .eq('restaurant_id', restaurantId)
+
+      let maxOrder = existingCats?.length
+        ? Math.max(...existingCats.map(c => c.sort_order || 0))
+        : 0
+
+      for (const item of parsedItems) {
+        // First, ensure category exists
+        let categoryId = existingCats?.find(c => c.name.toLowerCase() === item.category.toLowerCase())?.id
+
+        if (!categoryId) {
+          maxOrder++
+          const { data: newCategory, error: catError } = await supabase
+            .from('menu_categories')
+            .insert({
+              restaurant_id: restaurantId,
+              name: item.category,
+              sort_order: maxOrder,
+              is_active: true
+            })
+            .select('id')
+            .single()
+            
+          if (catError) throw catError
+          categoryId = newCategory?.id
+          
+          // update local cache so next item with same category finds it
+          if (newCategory) {
+            existingCats?.push({ id: newCategory.id, name: item.category, sort_order: maxOrder })
+          }
+        }
+
+        // Then insert the menu item
+        const { error: itemError } = await supabase.from('menu_items').insert({
+          restaurant_id: restaurantId,
+          category_id: categoryId,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          is_available: true,
+          sort_order: 0,
+        })
+        if (itemError) throw itemError
+      }
 
       setSuccess(`Se guardaron ${parsedItems.length} platos exitosamente`)
       setParsedItems([])

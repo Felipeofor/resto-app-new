@@ -149,18 +149,18 @@ export async function POST(request: NextRequest) {
       }).then(() => {});  // Ignore duplicate errors
     }
 
+    // Fetch restaurant info for email and response
+    const { data: restaurant } = await supabase
+      .from('restaurants')
+      .select('name, slug, transfer_alias, transfer_holder, whatsapp_number')
+      .eq('id', restaurantId)
+      .single();
+
     // Send order confirmation email if customer provided email and Resend is configured
     if (customerInfo.email && process.env.RESEND_API_KEY) {
       try {
         const { Resend } = await import('resend');
         const resend = new Resend(process.env.RESEND_API_KEY);
-
-        // Fetch restaurant info for email
-        const { data: restaurant } = await supabase
-          .from('restaurants')
-          .select('name, slug, transfer_alias, transfer_holder')
-          .eq('id', restaurantId)
-          .single();
 
         const restaurantName = restaurant?.name || 'El restaurante';
         const restaurantSlug = restaurant?.slug || '';
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: true, orderId, orderNumber, receiptUrl },
+      { success: true, orderId, orderNumber, receiptUrl, whatsappNumber: restaurant?.whatsapp_number },
       { status: 201 }
     );
   } catch (error) {

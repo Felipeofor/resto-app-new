@@ -35,7 +35,7 @@ export default function CheckoutPage({
 }: {
   params: { slug: string };
 }) {
-  const { items, getTotal, restaurantId } = useCart();
+  const { items, getTotal, restaurantId, restaurantSlug } = useCart();
   const [currentStep, setCurrentStep] = useState<Step>('info');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export default function CheckoutPage({
             Agrega algunos platos antes de proceder
           </p>
           <Link
-            href={`/menu/${params.slug}`}
+            href={`/menu/${restaurantSlug || params.slug}`}
             className="inline-block bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold px-6 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all"
           >
             Volver al menú
@@ -97,25 +97,49 @@ export default function CheckoutPage({
     setCurrentStep('confirmation');
   };
 
-  const handleWhatsAppOrder = () => {
-    const orderSummary = items
-      .map(
-        (item) =>
-          `• ${item.name} (${item.quantity}x) - $${(item.price * item.quantity).toFixed(2)}`
-      )
-      .join('\n');
+  const handleWhatsAppOrder = async () => {
+    // Para efectivo (pago contra-entrega u otros donde no se carga comprobante manual aquí)
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('customerInfo', JSON.stringify(customerInfo));
+      formData.append('items', JSON.stringify(items));
+      formData.append('paymentMethod', 'cash');
+      formData.append('restaurantId', restaurantId || '');
+      formData.append('total', total.toString());
+      formData.append('subtotal', subtotal.toString());
+      formData.append('deliveryFee', deliveryFee.toString());
 
-    const message = `Hola! Quiero hacer un pedido:\n\n${orderSummary}\n\nTotal: $${total.toFixed(2)}\n\nDirección: ${customerInfo.address}\nNombre: ${customerInfo.fullName}${
-      customerInfo.notes ? `\nNotas: ${customerInfo.notes}` : ''
-    }`;
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        body: formData,
+      });
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappPhone = customerInfo.whatsapp.replace(/\s+/g, '');
-    const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
+      if (!response.ok) throw new Error('Error al crear el pedido');
+      const data = await response.json();
 
-    window.open(whatsappUrl, '_blank');
-    setSuccess(true);
-    setOrderNumber(`WA-${Date.now()}`);
+      setSuccess(true);
+      setOrderNumber(data.orderNumber);
+
+      if (data.whatsappNumber) {
+        const orderSummary = items
+          .map((item) => `• ${item.name} (${item.quantity}x) - $${(item.price * item.quantity).toFixed(2)}`)
+          .join('\n');
+
+        const message = `Hola! Quiero hacer un pedido:\n\n${orderSummary}\n\nTotal: $${total.toFixed(2)}\n\nDirección: ${customerInfo.address}\nNombre: ${customerInfo.fullName}${customerInfo.notes ? `\nNotas: ${customerInfo.notes}` : ''}\nNº de Pedido: ${data.orderNumber}`;
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappPhone = data.whatsappNumber.replace(/\s+/g, '');
+        const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
+
+        window.open(whatsappUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al procesar el pedido. Intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,6 +170,9 @@ export default function CheckoutPage({
       formData.append('restaurantId', restaurantId || '');
       formData.append('total', total.toString());
 
+      formData.append('subtotal', subtotal.toString());
+      formData.append('deliveryFee', deliveryFee.toString());
+
       const response = await fetch('/api/orders', {
         method: 'POST',
         body: formData,
@@ -158,6 +185,20 @@ export default function CheckoutPage({
       const data = await response.json();
       setSuccess(true);
       setOrderNumber(data.orderNumber);
+
+      if (data.whatsappNumber) {
+        const orderSummary = items
+          .map((item) => `• ${item.name} (${item.quantity}x) - $${(item.price * item.quantity).toFixed(2)}`)
+          .join('\n');
+
+        const message = `Hola! Quiero confirmar mi pedido abonado por transferencia:\n\n${orderSummary}\n\nTotal: $${total.toFixed(2)}\nDirección: ${customerInfo.address}\nNombre: ${customerInfo.fullName}\nNº Pedido: ${data.orderNumber}\n\n*Nota: Te enviaré aquí mismo el comprobante de pago.*`;
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappPhone = data.whatsappNumber.replace(/\s+/g, '');
+        const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
+
+        window.open(whatsappUrl, '_blank');
+      }
     } catch (error) {
       console.error('Error:', error);
       alert('Error al procesar el pedido. Intenta nuevamente.');
@@ -188,7 +229,7 @@ export default function CheckoutPage({
               : 'Tu comprobante fue recibido. El restaurante confirmará tu pedido en breve.'}
           </p>
           <Link
-            href={`/menu/${params.slug}`}
+            href={`/menu/${restaurantSlug || params.slug}`}
             className="inline-block bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold px-6 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all"
           >
             Volver al menú

@@ -159,6 +159,18 @@ function MenuContentInner({
             />
           )}
         </div>
+
+        {/* Footer Link for RestoQR */}
+        <div className="max-w-4xl mx-auto mt-16 text-center">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-5 py-2.5 bg-white/60 hover:bg-white rounded-full border border-gray-200 shadow-sm transition-all text-sm text-gray-600 hover:text-gray-900 hover:shadow-md"
+          >
+            ¿Querés un menú así para tu local? 🚀 <span className="font-semibold text-purple-600 ml-1">Crealo gratis aquí</span>
+          </a>
+        </div>
       </div>
 
       {/* Floating Cart Button */}
