@@ -190,39 +190,44 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
   const ic = INCENTIVE_DEFAULTS[incentiveType]
   const primaryColor = restaurant.primary_color || '#f97316'
 
+  const handleSkip = () => {
+    localStorage.setItem(`resto-email-${restaurant.id}`, '__skipped__')
+    onSkip?.()
+  }
+
   return (
-    <div className="flex items-center justify-center min-h-screen p-4"
+    <div className="flex items-end sm:items-center justify-center min-h-screen p-0 sm:p-4"
       style={{ background: 'linear-gradient(135deg, #fdf6ec 0%, #fef3e2 50%, #fff7ed 100%)' }}>
       <div className="w-full max-w-sm">
 
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
 
           {/* ------ Hero header --------------------------------------------------------------------------------------------------- */}
           <div
-            className="px-8 pt-8 pb-6 text-center"
+            className="px-6 pt-6 pb-4 text-center"
             style={{ background: `linear-gradient(135deg, ${primaryColor}18, ${primaryColor}08)` }}
           >
             {restaurant.logo_url ? (
               <img src={restaurant.logo_url} alt={restaurant.name}
-                className="h-16 w-auto object-contain mx-auto mb-4 drop-shadow-sm" />
+                className="h-14 w-auto object-contain mx-auto mb-3 drop-shadow-sm" />
             ) : (
-              <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl"
+              <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center text-2xl"
                 style={{ background: `${primaryColor}20` }}>
-                🍽️
+                {'\uD83C\uDF7D\uFE0F'}
               </div>
             )}
-            <h1 className="text-2xl font-black text-gray-900 leading-tight">{restaurant.name}</h1>
+            <h1 className="text-xl font-black text-gray-900 leading-tight">{restaurant.name}</h1>
             {restaurant.welcome_message && (
               <p className="text-gray-500 text-sm mt-1">{restaurant.welcome_message}</p>
             )}
           </div>
 
-          <div className="px-8 pb-8 pt-4 space-y-5">
+          <div className="px-6 pb-6 pt-3 space-y-4">
 
             {/* ------ Incentive card --------------------------------------------------------------------------------- */}
             {showIncentive && (
-              <div className={`rounded-2xl bg-gradient-to-br ${ic.bg} border border-white shadow-inner p-4`}>
+              <div className={`rounded-2xl bg-gradient-to-br ${ic.bg} border border-white shadow-inner p-3.5`}>
                 {/* Badge */}
                 <div className="flex items-start gap-3">
                   <div
@@ -230,8 +235,8 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
                   >
                     <span className="text-xl">{ic.emoji}</span>
                   </div>
-                  <div className="flex-1">
-                    <p className={`font-black text-lg leading-tight ${ic.textColor}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-black text-base leading-tight ${ic.textColor}`}>
                       {restaurant.incentive_title}
                     </p>
                     {restaurant.incentive_description && (
@@ -260,7 +265,7 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
                       </div>
                     ) : (
                       <p className="text-xs text-gray-500 text-center mt-1">
-                        El código se revelará al registrarte 🎉
+                        {`El c\u00F3digo se revelar\u00E1 al registrarte \uD83C\uDF89`}
                       </p>
                     )}
                   </div>
@@ -272,11 +277,11 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
             <div className="text-center">
               <p className="text-sm font-semibold text-gray-700">
                 {showIncentive
-                  ? '¡Ingresá tu correo y accedé al beneficio!'
-                  : 'Ingresá tu correo para ver el menú'}
+                  ? `\u00A1Ingres\u00E1 tu correo y acced\u00E9 al beneficio!`
+                  : `Ingres\u00E1 tu correo para ver el men\u00FA`}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
-                Sin spam · Podés darte de baja cuando quieras
+                {`Sin spam \u00B7 Pod\u00E9s darte de baja cuando quieras`}
               </p>
             </div>
 
@@ -295,48 +300,54 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@correo.com"
                 disabled={isLoading || googleLoading}
-                className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent bg-gray-50 text-gray-900 placeholder-gray-400 disabled:opacity-60 transition-all"
+                className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent bg-gray-50 text-gray-900 placeholder-gray-400 disabled:opacity-60 transition-all text-base"
                 style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
               />
               <button
                 type="submit"
                 disabled={isLoading || googleLoading}
-                className="w-full text-white font-bold py-3.5 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]"
+                className="w-full text-white font-bold py-3.5 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98] text-[15px]"
                 style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)` }}
                 onClick={() => { if (restaurant.incentive_code) setCodeRevealed(true) }}
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /><span>Registrando...</span></>
                 ) : showIncentive ? (
-                  `¡Quiero ${restaurant.incentive_title}! -��`
+                  <>{`\u00A1Quiero ${restaurant.incentive_title}!`}</>
                 ) : (
-                  'Ver el menú -��'
+                  <>{'Ver el men\u00FA'}</>
                 )}
               </button>
             </form>
 
+            {/* ------ Google sign-in --------------------------------------------------------------------------------------------------- */}
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading || googleLoading}
+              className="w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 active:scale-[0.98] transition-all disabled:opacity-50"
+            >
+              {googleLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              <span>Continuar con Google</span>
+            </button>
+
             {/* ------ Skip --------------------------------------------------------------------------------------------------------------- */}
             {onSkip && (
-              <div className="text-center pt-1">
+              <div className="text-center">
                 <button
                   type="button"
-                  onClick={onSkip}
-                  className="text-xs text-gray-400 hover:text-gray-500 transition-colors underline underline-offset-2"
+                  onClick={handleSkip}
+                  className="text-xs text-gray-400 hover:text-gray-500 transition-colors underline underline-offset-2 py-2"
                 >
                   Continuar sin registrarme
                 </button>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Trust badges */}
-        <div className="flex justify-center gap-4 mt-4 text-xs text-gray-400">
-          <span>�-� Correo seguro</span>
-          <span>·</span>
-          <span>🚫 Sin spam</span>
-          <span>·</span>
-          <span>-�� Baja cuando quieras</span>
         </div>
       </div>
     </div>
