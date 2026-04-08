@@ -11,6 +11,9 @@ import {
   ChevronRight,
   Check,
   Star,
+  ShoppingBag,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 
 const features = [
@@ -18,25 +21,49 @@ const features = [
     icon: Camera,
     title: "Captura con IA",
     description:
-      "Toma fotos de tu menú físico y nuestra IA lo digitaliza automáticamente. Sin escribir nada.",
+      "Toma fotos de tu menu fisico y nuestra IA lo digitaliza automaticamente. Sin escribir nada.",
   },
   {
     icon: QrCode,
     title: "QR Personalizado",
     description:
-      "Genera códigos QR únicos para tu restaurante. Tus clientes escanean y ven el menú al instante.",
+      "Genera codigos QR unicos con los colores de tu marca. Tus clientes escanean y ven el menu al instante.",
+  },
+  {
+    icon: ShoppingBag,
+    title: "Pedidos y Delivery",
+    description:
+      "Recibe pedidos online con seguimiento, pagos por transferencia y notificaciones automaticas.",
+  },
+  {
+    icon: Wallet,
+    title: "Control de Finanzas",
+    description:
+      "Registra ingresos y egresos, visualiza tu balance mensual y exporta reportes a CSV.",
   },
   {
     icon: Mail,
-    title: "Captura Emails",
+    title: "Captura de Emails",
     description:
-      "Recolecta emails de tus clientes y envía descuentos automáticos para fidelizarlos.",
+      "Recolecta emails con incentivos personalizados y envia bienvenidas automaticas.",
   },
   {
     icon: BarChart3,
-    title: "Métricas en Tiempo Real",
+    title: "Metricas en Tiempo Real",
     description:
-      "Conoce cuántas veces se escanea tu QR, visitas al menú y emails registrados.",
+      "Escaneos QR, visitas al menu, emails registrados y tendencias por dia.",
+  },
+  {
+    icon: Sparkles,
+    title: "Personalizacion Total",
+    description:
+      "Colores de marca, logo, vista de menu (lista o grilla) y mensajes personalizados.",
+  },
+  {
+    icon: Wrench,
+    title: "Soluciones a Medida",
+    description:
+      "Tienda virtual, gestion de mesas, app propia, facturacion y mas. Desarrollo personalizado.",
   },
 ];
 
@@ -47,30 +74,47 @@ const plans = [
     period: "/mes",
     description: "Perfecto para empezar",
     features: [
-      "Menú digital por QR",
-      "Hasta 100 productos manuales",
-      "Código QR personalizado",
-      "Sin fotos de productos",
+      "Menu digital con QR",
+      "Hasta 100 productos",
+      "Codigo QR personalizable",
+      "Control de finanzas basico",
+      "Colores y logo de tu marca",
     ],
     cta: "Comenzar Gratis",
     highlighted: false,
   },
   {
-    name: "Pro",
+    name: "Pro Mensual",
     price: "$5.000",
     period: "/mes",
-    description: "Todas las funcionalidades para tu restaurante",
+    description: "Todo lo que necesitas para crecer",
     features: [
       "Todo del plan Gratuito",
-      "Productos ilimitados con fotos",
-      "Captura de menú con IA",
+      "Productos ilimitados con fotos HD",
+      "Captura de menu con IA",
       "Sistema de pedidos y delivery",
-      "Dashboard de métricas completo",
-      "Captura de emails + bienvenida automática",
+      "Metricas y analytics completo",
+      "Captura de emails + bienvenida automatica",
+      "Finanzas con desglose y exportar CSV",
       "Soporte prioritario",
     ],
     cta: "Comenzar con Pro",
     highlighted: true,
+  },
+  {
+    name: "Pro Anual",
+    price: "$50.000",
+    period: "/ano",
+    description: "2 meses gratis - el mejor valor",
+    features: [
+      "Todo del plan Pro Mensual",
+      "Ahorras $10.000 por ano",
+      "365 dias de acceso garantizado",
+      "Acceso anticipado a nuevas features",
+    ],
+    cta: "Ahorrar con Plan Anual",
+    highlighted: false,
+    isAnnual: true,
   },
 ];
 
@@ -146,14 +190,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Todo lo que necesitas para tu menú digital
+              Todo lo que necesita tu restaurante
             </h2>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              Herramientas diseñadas para que gestionar tu carta sea simple y
-              efectivo.
+              Menu digital, pedidos, finanzas y mas. Una sola plataforma para
+              gestionar todo.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -185,7 +229,7 @@ export default function Home() {
               Empieza gratis, escala cuando quieras.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {plans.map((plan) => (
               <div
                 key={plan.name}
@@ -199,6 +243,11 @@ export default function Home() {
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-semibold">
                     <Star className="w-3.5 h-3.5" />
                     Popular
+                  </div>
+                )}
+                {(plan as any).isAnnual && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 bg-green-400 text-green-900 px-4 py-1 rounded-full text-sm font-semibold">
+                    2 meses gratis
                   </div>
                 )}
                 <h3
