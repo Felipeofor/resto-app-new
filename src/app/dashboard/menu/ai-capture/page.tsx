@@ -297,6 +297,7 @@ export default function AICapturePageClient() {
       {parsedItems.length === 0 && (
         <div
           {...getRootProps()}
+          onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
             isDragActive
               ? 'border-orange-500 bg-orange-50'
