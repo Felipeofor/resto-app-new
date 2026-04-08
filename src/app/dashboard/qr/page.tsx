@@ -12,6 +12,7 @@ import {
   Palette,
   RotateCcw,
 } from 'lucide-react';
+import { useRestaurant } from '@/lib/context/restaurant-context';
 
 // ============================================
 // QR generation using Canvas API
@@ -276,20 +277,21 @@ const colorPresets = [
 // ============================================
 
 export default function QRCodePage() {
+  const { currentRestaurant } = useRestaurant();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState(colorPresets[0]);
   const [qrSize] = useState(800); // High res for printing
 
-  // TODO: Use useRestaurant() context to get real data
-  const restaurantName = 'Mi Restaurante';
-  const restaurantSlug = 'mi-restaurante';
+  const restaurantName = currentRestaurant?.name || '';
+  const restaurantSlug = currentRestaurant?.slug || '';
   const restaurantLogo: string | null = null;
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://restoqr.app';
   const menuUrl = `${siteUrl}/menu/${restaurantSlug}`;
 
   const generateQR = useCallback(async () => {
+    if (!restaurantSlug) return;
     setLoading(true);
     try {
       const dataUrl = await generateQRDataURL(menuUrl, {
@@ -305,7 +307,7 @@ export default function QRCodePage() {
     } finally {
       setLoading(false);
     }
-  }, [menuUrl, qrSize, selectedColor, restaurantLogo]);
+  }, [menuUrl, qrSize, selectedColor, restaurantLogo, restaurantSlug]);
 
   useEffect(() => {
     generateQR();
@@ -342,6 +344,14 @@ export default function QRCodePage() {
       printWindow.document.close();
     }
   };
+
+  if (!currentRestaurant) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-600">Cargando restaurante...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

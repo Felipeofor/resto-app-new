@@ -21,16 +21,23 @@
   --color-primary-900: #4c1d95;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Force all form elements to have dark text */
+input, select, textarea, option {
+  color: #171717;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af;
+}
+
+select option {
+  color: #171717;
+  background: #ffffff;
 }
 
 /* Scrollbar styles */

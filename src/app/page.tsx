@@ -47,26 +47,26 @@ const plans = [
     period: "/mes",
     description: "Perfecto para empezar",
     features: [
-      "Menú digital completo",
+      "Menú digital por QR",
+      "Hasta 100 productos manuales",
       "Código QR personalizado",
-      "Hasta 30 fotos IA/mes",
-      "Vista de emails registrados",
-      "2 modos de visualización",
+      "Sin fotos de productos",
     ],
     cta: "Comenzar Gratis",
     highlighted: false,
   },
   {
     name: "Pro",
-    price: "$19",
+    price: "$5.000",
     period: "/mes",
-    description: "Para restaurantes que quieren crecer",
+    description: "Todas las funcionalidades para tu restaurante",
     features: [
       "Todo del plan Gratuito",
-      "Hasta 100 fotos IA/mes",
+      "Productos ilimitados con fotos",
+      "Captura de menú con IA",
+      "Sistema de pedidos y delivery",
       "Dashboard de métricas completo",
-      "Emails de bienvenida automáticos",
-      "Descuentos configurables",
+      "Captura de emails + bienvenida automática",
       "Soporte prioritario",
     ],
     cta: "Comenzar con Pro",
@@ -227,7 +227,7 @@ export default function Home() {
                       <Check
                         className={`w-5 h-5 mt-0.5 flex-shrink-0 ${plan.highlighted ? "text-purple-200" : "text-purple-600"}`}
                       />
-                      <span className="text-sm">{feature}</span>
+                      <span className={`text-sm ${plan.highlighted ? "text-purple-100" : "text-gray-700"}`}>{feature}</span>
                     </li>
                   ))}
                 </ul>

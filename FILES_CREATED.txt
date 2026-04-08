@@ -1,0 +1,142 @@
+RESTAURANT MENU WEB APP - COMPLETE FILE LIST
+=============================================
+
+PUBLIC MENU PAGES & COMPONENTS
+==============================
+
+1. /src/app/menu/[slug]/page.tsx
+   - Main server component for public menu page
+   - Handles email gating and menu display
+   - Integrates EmailGate and MenuContent components
+
+2. /src/app/menu/[slug]/components/EmailGate.tsx
+   - Email collection component with localStorage
+   - Validates email format
+   - OAuth-ready with Google button
+   - Beautiful card design with restaurant branding
+
+3. /src/app/menu/[slug]/components/MenuContent.tsx
+   - View mode controller (List vs Grid)
+   - Restaurant header with logo and cover image
+   - Category filtering
+   - Responsive layout with warm color scheme
+
+4. /src/app/menu/[slug]/components/ListView.tsx
+   - List-style menu display
+   - Search/filter functionality
+   - Item thumbnails with descriptions
+   - Category grouping with headers
+
+5. /src/app/menu/[slug]/components/PhotoGridView.tsx
+   - Grid layout for menu items (1/2/3 columns)
+   - Large appetizing images
+   - Item overlay with price
+   - Click to expand in lightbox
+   - Category tabs for filtering
+
+6. /src/app/menu/[slug]/components/Lightbox.tsx
+   - Fullscreen image viewer
+   - Navigation arrows and keyboard support
+   - Item details display
+   - Close button and ESC key handling
+   - Position counter
+   - Smooth animations
+
+API ROUTES
+==========
+
+7. /src/app/api/menu/[slug]/route.ts
+   - GET endpoint for fetching menu data
+   - Returns restaurant, categories, and items
+   - Includes visit analytics tracking (TODO)
+   - Error handling
+
+8. /src/app/api/register-email/route.ts
+   - POST endpoint for email registration
+   - Validates email format
+   - Saves to customer_emails table (TODO)
+   - Tracks analytics (TODO)
+   - Sends welcome email via Resend (TODO)
+
+9. /src/app/api/ai/parse-menu/route.ts
+   - POST endpoint for AI menu image processing
+   - Dual provider: Gemini (primary) → Claude (fallback)
+   - Base64 and URL image support
+   - Usage quota enforcement per plan
+   - Returns structured JSON with parsed items
+
+10. /src/app/api/ai/parse-menu/prompts.ts
+    - System prompt for Spanish menu extraction
+    - User prompt template
+    - ParsedMenuItem TypeScript interface
+    - Optimized for accurate extraction
+
+DASHBOARD AI CAPTURE
+====================
+
+11. /src/app/dashboard/menu/ai-capture/page.tsx
+    - Drag & drop file upload interface
+    - Image preview grid
+    - AI processing with loading states
+    - Editable results before saving
+    - Usage tracking display
+    - Batch save functionality
+    - Error and success messaging
+
+UTILITIES & HOOKS
+=================
+
+12. /src/lib/hooks/useDropZone.ts
+    - Custom React hook for drag & drop
+    - Prevents default drag behavior
+    - Provides RootProps for drop zone
+    - Drag active state management
+
+DOCUMENTATION
+==============
+
+13. IMPLEMENTATION_SUMMARY.md
+    - Complete feature overview
+    - Component descriptions
+    - API endpoint documentation
+    - Design system details
+    - Integration points (TODOs)
+    - File structure
+    - Environment variables needed
+
+14. SETUP_GUIDE.md
+    - Installation instructions
+    - Environment variables setup
+    - Development server start
+    - Feature testing guide
+    - API endpoint testing examples
+    - Troubleshooting tips
+    - Performance notes
+
+15. FILES_CREATED.txt (this file)
+    - Complete file listing
+    - Quick reference guide
+
+TOTAL FILES CREATED: 15
+========================
+
+KEY FEATURES IMPLEMENTED:
+- Email gate for customer collection
+- Two-mode menu display (List & Grid)
+- Responsive design (mobile-first)
+- Lightbox image viewer
+- AI-powered menu parsing
+- Dual AI provider fallback
+- Usage quota management
+- Spanish language interface
+- Beautiful appetizing design
+- Complete API structure
+- TypeScript throughout
+- Mock data with Supabase TODO comments
+
+READY FOR:
+- Supabase database integration
+- Google OAuth setup
+- Resend email integration
+- Gemini/Claude API configuration
+- Production deployment

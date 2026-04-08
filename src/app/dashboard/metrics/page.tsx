@@ -1,59 +1,103 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Lock, TrendingUp, Eye, QrCode, Mail } from 'lucide-react';
+import { Lock, Eye, QrCode, Mail } from 'lucide-react';
+import { useRestaurant } from '@/lib/context/restaurant-context';
+import { createClient } from '@/lib/supabase/client';
 
 interface MetricsData {
   totalVisits: number;
   qrScans: number;
   emailsThisMonth: number;
-  visitsData: Array<{ date: string; count: number }>;
-  scansData: Array<{ week: string; count: number }>;
-}
-
-interface PlanInfo {
-  plan: 'free' | 'pro';
+  dailyVisits: Array<{ date: string; count: number }>;
+  dailyScans: Array<{ date: string; count: number }>;
 }
 
 export default function MetricsPage() {
+  const { currentRestaurant } = useRestaurant();
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
-  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mock plan info
-    setPlanInfo({ plan: 'free' });
+    const fetchMetrics = async () => {
+      if (!currentRestaurant) {
+        setLoading(false);
+        return;
+      }
 
-    // Mock metrics data
-    const today = new Date();
-    const visitsData = [];
-    const scansData = [
-      { week: 'Sem 1', count: 45 },
-      { week: 'Sem 2', count: 78 },
-      { week: 'Sem 3', count: 62 },
-      { week: 'Sem 4', count: 95 },
-    ];
+      try {
+        setLoading(true);
+        const supabase = createClient();
 
-    // Generate last 30 days of data
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      visitsData.push({
-        date: date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
-        count: Math.floor(Math.random() * 40) + 5,
-      });
-    }
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    setMetrics({
-      totalVisits: 892,
-      qrScans: 280,
-      emailsThisMonth: 45,
-      visitsData,
-      scansData,
-    });
+        const { data: events, error: fetchError } = await supabase
+          .from('analytics_events')
+          .select('event_type, created_at')
+          .eq('restaurant_id', currentRestaurant.id)
+          .gte('created_at', thirtyDaysAgo.toISOString());
 
-    setLoading(false);
-  }, []);
+        if (fetchError) throw fetchError;
+
+        const eventsByType: { [key: string]: number } = {
+          visit: 0,
+          qr_scan: 0,
+          email_register: 0,
+        };
+
+        const dailyData: { [key: string]: { visits: number; scans: number } } = {};
+
+        (events || []).forEach((event: any) => {
+          const eventType = event.event_type;
+          if (eventType in eventsByType) {
+            eventsByType[eventType]++;
+          }
+
+          const date = new Date(event.created_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+          if (!dailyData[date]) {
+            dailyData[date] = { visits: 0, scans: 0 };
+          }
+
+          if (eventType === 'visit') dailyData[date].visits++;
+          if (eventType === 'qr_scan') dailyData[date].scans++;
+        });
+
+        const emailsThisMonth = (events || []).filter((e: any) => {
+          const eventDate = new Date(e.created_at);
+          return eventDate >= monthStart && e.event_type === 'email_register';
+        }).length;
+
+        const dailyVisits = Object.entries(dailyData).map(([date, data]) => ({
+          date,
+          count: data.visits,
+        }));
+
+        const dailyScans = Object.entries(dailyData).map(([date, data]) => ({
+          date,
+          count: data.scans,
+        }));
+
+        setMetrics({
+          totalVisits: eventsByType.visit,
+          qrScans: eventsByType.qr_scan,
+          emailsThisMonth,
+          dailyVisits,
+          dailyScans,
+        });
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching metrics:', err);
+        setError('Error al cargar las métricas');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMetrics();
+  }, [currentRestaurant]);
 
   if (loading) {
     return (
@@ -63,7 +107,7 @@ export default function MetricsPage() {
     );
   }
 
-  const isFreePlan = planInfo?.plan === 'free';
+  const isFreePlan = currentRestaurant?.plan === 'free';
 
   return (
     <div className="space-y-6">
@@ -82,11 +126,10 @@ export default function MetricsPage() {
             <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h3 className="font-bold text-amber-900 mb-1">
-                Upgrade a Plan Pro para Métricas Completas
+                Actualizá a Plan Pro
               </h3>
               <p className="text-sm text-amber-800 mb-4">
-                Con el Plan Pro tendrás acceso a análisis detallados, gráficos interactivos
-                y reportes en tiempo real.
+                Con el Plan Pro tendrás acceso a gráficos interactivos y análisis detallados de tus métricas.
               </p>
               <button className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-semibold text-sm transition-all">
                 Ver Planes
@@ -96,20 +139,22 @@ export default function MetricsPage() {
         </div>
       )}
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+          {error}
+        </div>
+      )}
+
       {/* Basic Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Visits */}
         <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Visitas Totales</p>
-              {isFreePlan ? (
-                <div className="text-3xl font-bold text-gray-900 mt-2">
-                  {metrics?.totalVisits}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-500 mt-2">Disponible en Pro</p>
-              )}
+              <p className="text-gray-600 text-sm font-medium">Visitas Totales (30d)</p>
+              <div className="text-3xl font-bold text-gray-900 mt-2">
+                {metrics?.totalVisits || 0}
+              </div>
             </div>
             <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
               <Eye className="w-6 h-6 text-blue-600" />
@@ -121,14 +166,10 @@ export default function MetricsPage() {
         <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Escaneos QR</p>
-              {isFreePlan ? (
-                <div className="text-3xl font-bold text-gray-900 mt-2">
-                  {metrics?.qrScans}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-500 mt-2">Disponible en Pro</p>
-              )}
+              <p className="text-gray-600 text-sm font-medium">Escaneos QR (30d)</p>
+              <div className="text-3xl font-bold text-gray-900 mt-2">
+                {metrics?.qrScans || 0}
+              </div>
             </div>
             <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
               <QrCode className="w-6 h-6 text-green-600" />
@@ -142,7 +183,7 @@ export default function MetricsPage() {
             <div>
               <p className="text-gray-600 text-sm font-medium">Emails Este Mes</p>
               <div className="text-3xl font-bold text-gray-900 mt-2">
-                {metrics?.emailsThisMonth}
+                {metrics?.emailsThisMonth || 0}
               </div>
             </div>
             <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
@@ -152,7 +193,7 @@ export default function MetricsPage() {
         </div>
       </div>
 
-      {/* Charts Section - Locked for Free Plan */}
+      {/* Charts Section */}
       {isFreePlan ? (
         <div className="bg-white rounded-lg shadow-sm p-8 relative">
           <div className="absolute inset-0 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
@@ -160,7 +201,7 @@ export default function MetricsPage() {
               <Lock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
               <h3 className="font-bold text-gray-900 mb-2">Gráficos Detallados - Plan Pro</h3>
               <p className="text-sm text-gray-600 mb-4 max-w-xs">
-                Actualiza a Plan Pro para ver gráficos y análisis detallados de tus métricas
+                Actualizá a Plan Pro para ver gráficos y análisis detallados de tus métricas
               </p>
               <button className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-semibold text-sm transition-all">
                 Actualizar Ahora
@@ -168,20 +209,19 @@ export default function MetricsPage() {
             </div>
           </div>
 
-          <div className="opacity-50">
-            {/* Placeholder charts */}
-            <div className="space-y-8 pointer-events-none">
+          <div className="opacity-50 pointer-events-none">
+            <div className="space-y-8">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Visitas (Últimos 30 días)</h2>
-                <LineChart
-                  data={metrics?.visitsData || []}
+                <BarChart
+                  data={metrics?.dailyVisits || []}
                 />
               </div>
 
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Escaneos QR (Por Semana)</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-4">Escaneos QR (Últimos 30 días)</h2>
                 <BarChart
-                  data={metrics?.scansData || []}
+                  data={metrics?.dailyScans || []}
                 />
               </div>
             </div>
@@ -192,16 +232,16 @@ export default function MetricsPage() {
           {/* Visits Chart */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Visitas (Últimos 30 días)</h2>
-            <LineChart
-              data={metrics?.visitsData || []}
+            <BarChart
+              data={metrics?.dailyVisits || []}
             />
           </div>
 
           {/* QR Scans Chart */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Escaneos QR (Por Semana)</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Escaneos QR (Últimos 30 días)</h2>
             <BarChart
-              data={metrics?.scansData || []}
+              data={metrics?.dailyScans || []}
             />
           </div>
         </div>
@@ -231,6 +271,36 @@ export default function MetricsPage() {
           </li>
         </ul>
       </div>
+    </div>
+  );
+}
+
+// Simple Bar Chart Component
+function BarChart({
+  data,
+}: {
+  data: Array<{ date: string; count: number }>;
+}) {
+  const maxCount = Math.max(...data.map((d) => d.count), 1);
+  const chartHeight = 240;
+
+  return (
+    <div className="flex items-flex-end gap-1 h-80 p-4 bg-gray-50 rounded-lg overflow-x-auto">
+      {data.map((item, idx) => {
+        const height = (item.count / maxCount) * chartHeight;
+        return (
+          <div
+            key={idx}
+            className="flex-1 min-w-[20px] bg-gradient-to-t from-green-400 to-green-500 rounded-t hover:from-green-500 hover:to-green-600 transition-all relative group"
+            style={{ height: `${height}px` }}
+          >
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+              {item.count}
+              <span className="text-xs"> ({item.date})</span>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -265,32 +335,3 @@ function LineChart({
   );
 }
 
-// Simple Bar Chart Component
-function BarChart({
-  data,
-}: {
-  data: Array<{ week: string; count: number }>;
-}) {
-  const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const chartHeight = 240;
-
-  return (
-    <div className="flex items-flex-end gap-8 h-80 p-4 bg-gray-50 rounded-lg">
-      {data.map((item, idx) => {
-        const height = (item.count / maxCount) * chartHeight;
-        return (
-          <div key={idx} className="flex-1 flex flex-col items-center group">
-            <div className="w-12 bg-gradient-to-t from-green-400 to-green-500 rounded-t hover:from-green-500 hover:to-green-600 transition-all relative"
-              style={{ height: `${height}px` }}
-            >
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                {item.count}
-              </div>
-            </div>
-            <p className="mt-3 font-semibold text-gray-700 text-sm">{item.week}</p>
-          </div>
-        );
-      })}
-    </div>
-  );
-}

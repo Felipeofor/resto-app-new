@@ -76,13 +76,12 @@ export async function signUp(
       };
     }
 
-    // Create user profile
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      email: email,
+    // Update profile created by trigger (handle_new_user sets role='user')
+    // We upgrade to 'admin' for self-registered users
+    const { error: profileError } = await supabase.from('profiles').update({
       full_name: fullName,
       role: 'admin' as const,
-    });
+    }).eq('id', data.user.id);
 
     if (profileError) {
       return {

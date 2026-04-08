@@ -8,6 +8,7 @@ export type Database = {
           role: 'super_admin' | 'admin' | 'user'
           full_name: string | null
           avatar_url: string | null
+          phone: string | null
           created_at: string
           updated_at: string
         }
@@ -17,6 +18,7 @@ export type Database = {
           role?: 'super_admin' | 'admin' | 'user'
           full_name?: string | null
           avatar_url?: string | null
+          phone?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -26,6 +28,7 @@ export type Database = {
           role?: 'super_admin' | 'admin' | 'user'
           full_name?: string | null
           avatar_url?: string | null
+          phone?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -45,6 +48,14 @@ export type Database = {
           welcome_message: string | null
           discount_text: string | null
           is_active: boolean
+          delivery_enabled: boolean
+          delivery_fee: number | null
+          whatsapp_number: string | null
+          transfer_alias: string | null
+          transfer_holder: string | null
+          transfer_bank: string | null
+          transfer_cbu: string | null
+          min_order_amount: number | null
           created_at: string
           updated_at: string
         }
@@ -61,6 +72,14 @@ export type Database = {
           welcome_message?: string | null
           discount_text?: string | null
           is_active?: boolean
+          delivery_enabled?: boolean
+          delivery_fee?: number | null
+          whatsapp_number?: string | null
+          transfer_alias?: string | null
+          transfer_holder?: string | null
+          transfer_bank?: string | null
+          transfer_cbu?: string | null
+          min_order_amount?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -77,6 +96,14 @@ export type Database = {
           welcome_message?: string | null
           discount_text?: string | null
           is_active?: boolean
+          delivery_enabled?: boolean
+          delivery_fee?: number | null
+          whatsapp_number?: string | null
+          transfer_alias?: string | null
+          transfer_holder?: string | null
+          transfer_bank?: string | null
+          transfer_cbu?: string | null
+          min_order_amount?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -354,6 +381,197 @@ export type Database = {
             referencedColumns: ['id']
           }
         ]
+      }
+      orders: {
+        Row: {
+          id: string
+          restaurant_id: string
+          order_number: number
+          customer_name: string
+          customer_email: string | null
+          customer_phone: string
+          delivery_address: string
+          delivery_notes: string | null
+          payment_method: 'cash' | 'transfer'
+          payment_status: 'pending' | 'uploaded' | 'confirmed' | 'rejected'
+          transfer_receipt_url: string | null
+          order_status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+          subtotal: number
+          delivery_fee: number
+          total: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          restaurant_id: string
+          order_number?: number
+          customer_name: string
+          customer_email?: string | null
+          customer_phone: string
+          delivery_address: string
+          delivery_notes?: string | null
+          payment_method: 'cash' | 'transfer'
+          payment_status?: 'pending' | 'uploaded' | 'confirmed' | 'rejected'
+          transfer_receipt_url?: string | null
+          order_status?: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+          subtotal: number
+          delivery_fee?: number
+          total: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          restaurant_id?: string
+          order_number?: number
+          customer_name?: string
+          customer_email?: string | null
+          customer_phone?: string
+          delivery_address?: string
+          delivery_notes?: string | null
+          payment_method?: 'cash' | 'transfer'
+          payment_status?: 'pending' | 'uploaded' | 'confirmed' | 'rejected'
+          transfer_receipt_url?: string | null
+          order_status?: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+          subtotal?: number
+          delivery_fee?: number
+          total?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'orders_restaurant_id_fkey'
+            columns: ['restaurant_id']
+            isOneToOne: false
+            referencedRelation: 'restaurants'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      order_items: {
+        Row: {
+          id: string
+          order_id: string
+          menu_item_id: string | null
+          name: string
+          price: number
+          quantity: number
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          menu_item_id?: string | null
+          name: string
+          price: number
+          quantity?: number
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          menu_item_id?: string | null
+          name?: string
+          price?: number
+          quantity?: number
+          notes?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'order_items_order_id_fkey'
+            columns: ['order_id']
+            isOneToOne: false
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'order_items_menu_item_id_fkey'
+            columns: ['menu_item_id']
+            isOneToOne: false
+            referencedRelation: 'menu_items'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      subscription_payments: {
+        Row: {
+          id: string
+          restaurant_id: string
+          user_id: string
+          amount: number
+          transfer_receipt_url: string | null
+          status: 'pending' | 'approved' | 'rejected'
+          reviewed_by: string | null
+          reviewed_at: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          restaurant_id: string
+          user_id: string
+          amount?: number
+          transfer_receipt_url?: string | null
+          status?: 'pending' | 'approved' | 'rejected'
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          restaurant_id?: string
+          user_id?: string
+          amount?: number
+          transfer_receipt_url?: string | null
+          status?: 'pending' | 'approved' | 'rejected'
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'subscription_payments_restaurant_id_fkey'
+            columns: ['restaurant_id']
+            isOneToOne: false
+            referencedRelation: 'restaurants'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'subscription_payments_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      app_settings: {
+        Row: {
+          key: string
+          value: string
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          value: string
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          value?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {}

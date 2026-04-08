@@ -5,6 +5,38 @@ interface MenuRouteParams {
   slug: string
 }
 
+interface MenuCategory {
+  id: string
+  restaurant_id: string
+  name: string
+  description?: string
+  sort_order: number
+  is_active: boolean
+}
+
+interface MenuItem {
+  id: string
+  restaurant_id: string
+  category_id: string
+  name: string
+  description?: string
+  price: number
+  image_url?: string
+  is_available: boolean
+  sort_order: number
+}
+
+interface Restaurant {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  logo_url?: string
+  cover_url?: string
+  require_email: boolean
+  is_active: boolean
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<MenuRouteParams> }
@@ -13,87 +45,60 @@ export async function GET(
     const { slug } = await params
     const supabase = await createClient()
 
-    // TODO: Fetch restaurant data from Supabase
-    // const { data: restaurant, error: restaurantError } = await supabase
-    //   .from('restaurants')
-    //   .select('*')
-    //   .eq('slug', slug)
-    //   .single()
+    // Fetch restaurant by slug (must be active)
+    const { data: restaurant, error: restaurantError } = await supabase
+      .from('restaurants')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single()
 
-    // if (restaurantError || !restaurant) {
-    //   return NextResponse.json(
-    //     { error: 'Restaurante no encontrado' },
-    //     { status: 404 }
-    //   )
-    // }
-
-    // Mock restaurant data
-    const restaurant = {
-      id: 'rest-001',
-      name: 'El Buen Comer',
-      slug: 'el-buen-comer',
-      description: 'Auténtica cocina tradicional con ingredientes frescos',
-      logo_url: 'https://placehold.co/200x80/8B4513/ffffff?text=Logo',
-      cover_url: 'https://placehold.co/1200x400/D2691E/ffffff?text=Portada+Restaurante',
-      require_email: true,
+    if (restaurantError || !restaurant) {
+      return NextResponse.json(
+        { error: 'Restaurante no encontrado' },
+        { status: 404 }
+      )
     }
 
-    // TODO: Fetch categories from Supabase
-    // const { data: categories, error: categoriesError } = await supabase
-    //   .from('menu_categories')
-    //   .select('*')
-    //   .eq('restaurant_id', restaurant.id)
-    //   .eq('is_active', true)
-    //   .order('sort_order', { ascending: true })
+    // Fetch categories
+    const { data: categories, error: categoriesError } = await supabase
+      .from('menu_categories')
+      .select('*')
+      .eq('restaurant_id', restaurant.id)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
 
-    // Mock categories
-    const categories = [
-      { id: 'cat-001', name: 'Entrantes', sort_order: 1 },
-      { id: 'cat-002', name: 'Platos Principales', sort_order: 2 },
-      { id: 'cat-003', name: 'Postres', sort_order: 3 },
-    ]
+    if (categoriesError) {
+      console.error('Error fetching categories:', categoriesError)
+      throw categoriesError
+    }
 
-    // TODO: Fetch menu items from Supabase
-    // const { data: items, error: itemsError } = await supabase
-    //   .from('menu_items')
-    //   .select('*')
-    //   .eq('restaurant_id', restaurant.id)
-    //   .eq('is_available', true)
-    //   .order('sort_order', { ascending: true })
+    // Fetch menu items
+    const { data: items, error: itemsError } = await supabase
+      .from('menu_items')
+      .select('*')
+      .eq('restaurant_id', restaurant.id)
+      .eq('is_available', true)
+      .order('sort_order', { ascending: true })
 
-    // Mock items
-    const items = [
-      {
-        id: 'item-001',
-        category_id: 'cat-001',
-        name: 'Tabla de Quesos y Jamones',
-        description: 'Selección de quesos ibéricos y jamón serrano de la mejor calidad',
-        price: 18.5,
-        image_url: 'https://placehold.co/400x300/8B7355/ffffff?text=Tabla+de+Quesos',
+    if (itemsError) {
+      console.error('Error fetching items:', itemsError)
+      throw itemsError
+    }
+
+    // Track visit analytics
+    await supabase.from('analytics_events').insert({
+      restaurant_id: restaurant.id,
+      event_type: 'visit',
+      metadata: {
+        timestamp: new Date().toISOString(),
       },
-      {
-        id: 'item-002',
-        category_id: 'cat-001',
-        name: 'Croquetas de Jamón',
-        description: 'Croquetas caseras rellenas de jamón serrano, crujientes por fuera',
-        price: 10.5,
-        image_url: 'https://placehold.co/400x300/CD853F/ffffff?text=Croquetas',
-      },
-    ]
-
-    // TODO: Track visit analytics
-    // await supabase.from('analytics_events').insert({
-    //   restaurant_id: restaurant.id,
-    //   event_type: 'visit',
-    //   metadata: {
-    //     timestamp: new Date().toISOString(),
-    //   },
-    // })
+    })
 
     return NextResponse.json({
       restaurant,
-      categories,
-      items,
+      categories: categories || [],
+      items: items || [],
     })
   } catch (error) {
     console.error('Menu API error:', error)

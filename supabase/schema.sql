@@ -420,3 +420,176 @@ CREATE TRIGGER update_restaurants_updated_at
 CREATE TRIGGER update_menu_items_updated_at
   BEFORE UPDATE ON menu_items
   FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+-- ============================================
+-- ORDERS & DELIVERY
+-- ============================================
+
+CREATE TYPE order_status AS ENUM ('pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled');
+CREATE TYPE payment_method AS ENUM ('cash', 'transfer');
+CREATE TYPE payment_status AS ENUM ('pending', 'uploaded', 'confirmed', 'rejected');
+
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  order_number SERIAL,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT,
+  customer_phone TEXT NOT NULL,
+  delivery_address TEXT NOT NULL,
+  delivery_notes TEXT,
+  payment_method payment_method NOT NULL,
+  payment_status payment_status NOT NULL DEFAULT 'pending',
+  transfer_receipt_url TEXT,
+  order_status order_status NOT NULL DEFAULT 'pending',
+  subtotal DECIMAL(10, 2) NOT NULL,
+  delivery_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  total DECIMAL(10, 2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  menu_item_id UUID REFERENCES menu_items(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_orders_restaurant_id ON orders(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(order_status);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+
+-- RLS
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can create orders (public checkout)
+CREATE POLICY "Anyone can create orders" ON orders
+  FOR INSERT WITH CHECK (TRUE);
+
+-- Restaurant members can view their orders
+CREATE POLICY "Members can view orders" ON orders
+  FOR SELECT USING (is_restaurant_member(restaurant_id, auth.uid()));
+
+-- Anyone can view their own order by id (for tracking)
+CREATE POLICY "Customers can view their order" ON orders
+  FOR SELECT USING (TRUE);
+
+-- Editors can update order status
+CREATE POLICY "Editors can update orders" ON orders
+  FOR UPDATE USING (is_restaurant_member(restaurant_id, auth.uid(), 'editor'));
+
+-- Anyone can upload receipt (update transfer_receipt_url and payment_status)
+CREATE POLICY "Anyone can upload receipt" ON orders
+  FOR UPDATE USING (TRUE)
+  WITH CHECK (TRUE);
+
+-- Order items
+CREATE POLICY "Anyone can create order items" ON order_items
+  FOR INSERT WITH CHECK (TRUE);
+
+CREATE POLICY "Anyone can view order items" ON order_items
+  FOR SELECT USING (TRUE);
+
+-- Trigger for updated_at
+CREATE TRIGGER update_orders_updated_at
+  BEFORE UPDATE ON orders
+  FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+-- Add delivery configuration to restaurants
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS delivery_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS delivery_fee DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS whatsapp_number TEXT;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS transfer_alias TEXT;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS transfer_holder TEXT;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS transfer_bank TEXT;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS transfer_cbu TEXT;
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS min_order_amount DECIMAL(10,2) DEFAULT 0;
+
+-- ============================================
+-- PROFILES: add phone for restaurant owners
+-- ============================================
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+
+-- ============================================
+-- SUBSCRIPTION PAYMENTS
+-- ============================================
+-- Tracks Pro plan payment requests from restaurant owners
+-- Super admin reviews and approves/rejects
+
+CREATE TYPE subscription_payment_status AS ENUM ('pending', 'approved', 'rejected');
+
+CREATE TABLE IF NOT EXISTS subscription_payments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  amount DECIMAL(10, 2) NOT NULL DEFAULT 5000,
+  transfer_receipt_url TEXT,
+  status subscription_payment_status NOT NULL DEFAULT 'pending',
+  reviewed_by UUID REFERENCES profiles(id),
+  reviewed_at TIMESTAMP WITH TIME ZONE,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscription_payments_restaurant ON subscription_payments(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_subscription_payments_status ON subscription_payments(status);
+CREATE INDEX IF NOT EXISTS idx_subscription_payments_user ON subscription_payments(user_id);
+
+ALTER TABLE subscription_payments ENABLE ROW LEVEL SECURITY;
+
+-- Restaurant owners can view their own payments
+CREATE POLICY "Owners can view their subscription payments" ON subscription_payments
+  FOR SELECT USING (
+    user_id = auth.uid() OR
+    is_restaurant_member(restaurant_id, auth.uid(), 'owner') OR
+    is_super_admin(auth.uid())
+  );
+
+-- Restaurant owners can create payment requests
+CREATE POLICY "Owners can create subscription payments" ON subscription_payments
+  FOR INSERT WITH CHECK (
+    user_id = auth.uid() AND
+    is_restaurant_member(restaurant_id, auth.uid(), 'owner')
+  );
+
+-- Only super admins can update (approve/reject)
+CREATE POLICY "Super admins can update subscription payments" ON subscription_payments
+  FOR UPDATE USING (is_super_admin(auth.uid()));
+
+-- Trigger for updated_at
+CREATE TRIGGER update_subscription_payments_updated_at
+  BEFORE UPDATE ON subscription_payments
+  FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+-- ============================================
+-- APP SETTINGS (global config, managed by super_admin)
+-- ============================================
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+INSERT INTO app_settings (key, value) VALUES ('pro_price', '5000') ON CONFLICT (key) DO NOTHING;
+
+ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read settings
+CREATE POLICY "Anyone can read app settings" ON app_settings
+  FOR SELECT USING (TRUE);
+
+-- Only super admins can update
+CREATE POLICY "Super admins can update app settings" ON app_settings
+  FOR UPDATE USING (is_super_admin(auth.uid()));
+
+CREATE POLICY "Super admins can insert app settings" ON app_settings
+  FOR INSERT WITH CHECK (is_super_admin(auth.uid()));

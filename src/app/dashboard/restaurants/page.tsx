@@ -2,87 +2,86 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ExternalLink, Filter } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, ExternalLink, Filter, Loader } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 interface Restaurant {
   id: string;
   name: string;
-  admin_email: string;
+  slug: string;
+  owner_id: string;
   plan: 'free' | 'pro';
-  items_count: number;
   created_at: string;
+  profiles: {
+    email: string;
+    full_name: string | null;
+  };
 }
 
 export default function RestaurantsPage() {
+  const router = useRouter();
+  const supabase = createClient();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<'all' | 'free' | 'pro'>('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch restaurants from Supabase
   useEffect(() => {
-    // Mock restaurants data
-    const mockRestaurants: Restaurant[] = [
-      {
-        id: '1',
-        name: 'Pizzería Italia',
-        admin_email: 'owner1@example.com',
-        plan: 'pro',
-        items_count: 28,
-        created_at: '2024-01-15',
-      },
-      {
-        id: '2',
-        name: 'Sushi Palace',
-        admin_email: 'owner2@example.com',
-        plan: 'pro',
-        items_count: 45,
-        created_at: '2024-02-10',
-      },
-      {
-        id: '3',
-        name: 'Burger House',
-        admin_email: 'owner3@example.com',
-        plan: 'free',
-        items_count: 12,
-        created_at: '2024-03-05',
-      },
-      {
-        id: '4',
-        name: 'Café Artesano',
-        admin_email: 'owner4@example.com',
-        plan: 'pro',
-        items_count: 35,
-        created_at: '2024-03-20',
-      },
-      {
-        id: '5',
-        name: 'Tacos Mexicanos',
-        admin_email: 'owner5@example.com',
-        plan: 'free',
-        items_count: 18,
-        created_at: '2024-04-01',
-      },
-    ];
+    const fetchRestaurants = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    setRestaurants(mockRestaurants);
-    setFilteredRestaurants(mockRestaurants);
-    setLoading(false);
-  }, []);
+        const { data, error: fetchError } = await supabase
+          .from('restaurants')
+          .select(
+            `
+            id,
+            name,
+            slug,
+            owner_id,
+            plan,
+            created_at,
+            profiles:owner_id(email, full_name)
+          `
+          )
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
+        if (fetchError) {
+          throw fetchError;
+        }
+
+        setRestaurants(data || []);
+        setFilteredRestaurants(data || []);
+      } catch (err) {
+        console.error('Error fetching restaurants:', err);
+        setError('Error al cargar los restaurantes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurants();
+  }, [supabase]);
+
+  // Filter restaurants based on search term and plan
   useEffect(() => {
     let filtered = restaurants;
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(
         (r) =>
           r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.admin_email.toLowerCase().includes(searchTerm.toLowerCase())
+          r.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Filter by plan
     if (filterPlan !== 'all') {
       filtered = filtered.filter((r) => r.plan === filterPlan);
     }
@@ -90,10 +89,33 @@ export default function RestaurantsPage() {
     setFilteredRestaurants(filtered);
   }, [searchTerm, filterPlan, restaurants]);
 
+  const handleSelectRestaurant = (restaurantId: string, restaurantSlug: string) => {
+    // Save to localStorage
+    localStorage.setItem('selectedRestaurantId', restaurantId);
+    localStorage.setItem('selectedRestaurantSlug', restaurantSlug);
+
+    // Redirect to dashboard
+    router.push('/dashboard');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">Cargando restaurantes...</div>
+        <div className="flex flex-col items-center gap-3">
+          <Loader className="w-8 h-8 text-purple-600 animate-spin" />
+          <p className="text-gray-600">Cargando restaurantes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+          <h2 className="text-red-900 font-semibold mb-2">Error</h2>
+          <p className="text-red-700 text-sm">{error}</p>
+        </div>
       </div>
     );
   }
@@ -159,8 +181,8 @@ export default function RestaurantsPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -173,9 +195,6 @@ export default function RestaurantsPage() {
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                   Plan
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                  Platos
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                   Creado
@@ -195,7 +214,7 @@ export default function RestaurantsPage() {
                     {restaurant.name}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {restaurant.admin_email}
+                    {restaurant.profiles?.email}
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <span
@@ -209,13 +228,13 @@ export default function RestaurantsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {restaurant.items_count}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
                     {new Date(restaurant.created_at).toLocaleDateString('es-ES')}
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    <button className="inline-flex items-center space-x-1 text-purple-600 hover:text-purple-700 font-medium">
+                    <button
+                      onClick={() => handleSelectRestaurant(restaurant.id, restaurant.slug)}
+                      className="inline-flex items-center space-x-1 text-purple-600 hover:text-purple-700 font-medium hover:underline"
+                    >
                       <span>Ver</span>
                       <ExternalLink className="w-4 h-4" />
                     </button>
@@ -230,6 +249,52 @@ export default function RestaurantsPage() {
           <div className="text-center py-12">
             <p className="text-gray-600">No se encontraron restaurantes</p>
           </div>
+        )}
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {filteredRestaurants.length === 0 ? (
+          <div className="bg-white rounded-lg p-8 text-center">
+            <p className="text-gray-600">No se encontraron restaurantes</p>
+          </div>
+        ) : (
+          filteredRestaurants.map((restaurant) => (
+            <div
+              key={restaurant.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-100 p-5"
+            >
+              <div className="flex justify-between items-start gap-4 mb-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+                    {restaurant.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 truncate">
+                    {restaurant.profiles?.email}
+                  </p>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${
+                    restaurant.plan === 'pro'
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {restaurant.plan === 'pro' ? 'Pro' : 'Gratis'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">
+                Creado: {new Date(restaurant.created_at).toLocaleDateString('es-ES')}
+              </p>
+              <button
+                onClick={() => handleSelectRestaurant(restaurant.id, restaurant.slug)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200 transition-colors"
+              >
+                <span>Ver</span>
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            </div>
+          ))
         )}
       </div>
 

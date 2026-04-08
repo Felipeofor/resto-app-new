@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="h-full antialiased">
+    <html lang="es" className="h-full antialiased light" data-theme="light" style={{ colorScheme: 'light' }} suppressHydrationWarning>
       <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );

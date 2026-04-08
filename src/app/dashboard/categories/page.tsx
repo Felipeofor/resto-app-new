@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, GripVertical, Save, X } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { useRestaurant } from '@/lib/context/restaurant-context';
 
 interface Category {
   id: string;
@@ -11,70 +13,70 @@ interface Category {
 }
 
 export default function CategoriesPage() {
+  const { currentRestaurant } = useRestaurant();
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mock categories
-    const mockCategories: Category[] = [
-      {
-        id: '1',
-        name: 'Entradas',
-        description: 'Pequeños platos para comenzar',
-        sort_order: 1,
-      },
-      {
-        id: '2',
-        name: 'Platos Principales',
-        description: 'Nuestros platos estrella',
-        sort_order: 2,
-      },
-      {
-        id: '3',
-        name: 'Postres',
-        description: 'Dulces para terminar',
-        sort_order: 3,
-      },
-      {
-        id: '4',
-        name: 'Bebidas',
-        description: 'Selección de bebidas',
-        sort_order: 4,
-      },
-      {
-        id: '5',
-        name: 'Promociones',
-        description: 'Ofertas especiales del día',
-        sort_order: 5,
-      },
-      {
-        id: '6',
-        name: 'Opciones Vegetarianas',
-        description: 'Platos sin carne',
-        sort_order: 6,
-      },
-    ];
-    setCategories(mockCategories);
-    setLoading(false);
-  }, []);
+    if (currentRestaurant) {
+      fetchCategories();
+    }
+  }, [currentRestaurant]);
 
-  const handleAddCategory = (e: React.FormEvent) => {
+  const fetchCategories = async () => {
+    if (!currentRestaurant) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const { data, error: supabaseError } = await supabase
+        .from('menu_categories')
+        .select('id, name, description, sort_order')
+        .eq('restaurant_id', currentRestaurant.id)
+        .order('sort_order', { ascending: true });
+
+      if (supabaseError) throw supabaseError;
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      setError('Error al cargar categorías');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCategoryName.trim()) return;
+    if (!newCategoryName.trim() || !currentRestaurant) return;
 
-    const newCategory: Category = {
-      id: Date.now().toString(),
-      name: newCategoryName,
-      description: null,
-      sort_order: categories.length + 1,
-    };
+    try {
+      const supabase = createClient();
+      const { data, error: supabaseError } = await supabase
+        .from('menu_categories')
+        .insert({
+          restaurant_id: currentRestaurant.id,
+          name: newCategoryName,
+          description: null,
+          sort_order: categories.length + 1,
+          is_active: true,
+        })
+        .select()
+        .single();
 
-    setCategories([...categories, newCategory]);
-    setNewCategoryName('');
+      if (supabaseError) throw supabaseError;
+
+      setCategories([...categories, data]);
+      setNewCategoryName('');
+    } catch (err) {
+      console.error('Error adding category:', err);
+      setError('Error al agregar categoría');
+    }
   };
 
   const handleStartEdit = (category: Category) => {
@@ -82,21 +84,47 @@ export default function CategoriesPage() {
     setEditName(category.name);
   };
 
-  const handleSaveEdit = (id: string) => {
+  const handleSaveEdit = async (id: string) => {
     if (!editName.trim()) return;
 
-    setCategories(
-      categories.map((cat) =>
-        cat.id === id ? { ...cat, name: editName } : cat
-      )
-    );
-    setEditingId(null);
-    setEditName('');
+    try {
+      const supabase = createClient();
+      const { error: supabaseError } = await supabase
+        .from('menu_categories')
+        .update({ name: editName })
+        .eq('id', id);
+
+      if (supabaseError) throw supabaseError;
+
+      setCategories(
+        categories.map((cat) =>
+          cat.id === id ? { ...cat, name: editName } : cat
+        )
+      );
+      setEditingId(null);
+      setEditName('');
+    } catch (err) {
+      console.error('Error updating category:', err);
+      setError('Error al actualizar categoría');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setCategories(categories.filter((cat) => cat.id !== id));
-    setDeleteConfirm(null);
+  const handleDelete = async (id: string) => {
+    try {
+      const supabase = createClient();
+      const { error: supabaseError } = await supabase
+        .from('menu_categories')
+        .delete()
+        .eq('id', id);
+
+      if (supabaseError) throw supabaseError;
+
+      setCategories(categories.filter((cat) => cat.id !== id));
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      setError('Error al eliminar categoría');
+    }
   };
 
   const handleDragStart = (
@@ -112,7 +140,7 @@ export default function CategoriesPage() {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
     const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
 
@@ -122,11 +150,38 @@ export default function CategoriesPage() {
     const [draggedCategory] = newCategories.splice(sourceIndex, 1);
     newCategories.splice(targetIndex, 0, draggedCategory);
 
-    setCategories(newCategories.map((cat, idx) => ({
+    const reorderedCategories = newCategories.map((cat, idx) => ({
       ...cat,
       sort_order: idx + 1,
-    })));
+    }));
+
+    try {
+      const supabase = createClient();
+
+      // Update all reordered categories
+      for (const cat of reorderedCategories) {
+        const { error: supabaseError } = await supabase
+          .from('menu_categories')
+          .update({ sort_order: cat.sort_order })
+          .eq('id', cat.id);
+
+        if (supabaseError) throw supabaseError;
+      }
+
+      setCategories(reorderedCategories);
+    } catch (err) {
+      console.error('Error reordering categories:', err);
+      setError('Error al reordenar categorías');
+    }
   };
+
+  if (!currentRestaurant) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-600">Cargando restaurante...</div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -145,6 +200,13 @@ export default function CategoriesPage() {
           Organiza tu menú en categorías para una mejor experiencia del usuario
         </p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">

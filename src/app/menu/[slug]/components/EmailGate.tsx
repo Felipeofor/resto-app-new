@@ -49,29 +49,28 @@ export function EmailGate({ restaurant, onEmailSubmit }: EmailGateProps) {
     setIsLoading(true)
 
     try {
-      // TODO: Call API to register email
-      // const response = await fetch('/api/register-email', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     restaurantId: restaurant.id,
-      //     email,
-      //     registeredVia: 'manual',
-      //   }),
-      // })
+      const response = await fetch('/api/register-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantId: restaurant.id,
+          email,
+          registeredVia: 'manual',
+        }),
+      })
 
-      // if (!response.ok) {
-      //   throw new Error('Error al registrar correo')
-      // }
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        if (!data.error?.includes('duplicate')) {
+          throw new Error('Error al registrar correo')
+        }
+      }
 
       // Store email in localStorage
       localStorage.setItem(`resto-email-${restaurant.id}`, email)
 
       setIsSubmitted(true)
       onEmailSubmit?.(email)
-
-      // Reload to show menu content
-      window.location.reload()
     } catch (err) {
       setError('Error al registrar tu correo. Intenta de nuevo.')
       console.error(err)
