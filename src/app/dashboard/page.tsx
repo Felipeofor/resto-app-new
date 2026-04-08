@@ -280,14 +280,8 @@ export default function DashboardPage() {
                     {email.name || '-'}
                   </td>
                   <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm">
-                    <span
-                      className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
-                        email.registered_via === 'google'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
-                      }`}
-                    >
-                      {email.registered_via === 'google' ? 'Google' : 'Manual'}
+                    <span className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                      Email
                     </span>
                   </td>
                   <td className="hidden sm:table-cell px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-600">

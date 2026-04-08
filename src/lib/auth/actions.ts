@@ -109,47 +109,6 @@ export async function signUp(
 }
 
 /**
- * Sign in with Google OAuth
- */
-export async function signInWithGoogle(): Promise<AuthResult> {
-  let redirectUrl: string | null = null;
-
-  try {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-
-    if (data.url) {
-      redirectUrl = data.url;
-    }
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-
-  // redirect() must be called outside try/catch so Next.js can intercept NEXT_REDIRECT
-  if (redirectUrl) {
-    redirect(redirectUrl);
-  }
-
-  return { success: true };
-}
-
-/**
  * Sign out the current user
  */
 export async function signOut(): Promise<AuthResult> {

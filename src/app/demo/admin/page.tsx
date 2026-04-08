@@ -392,14 +392,8 @@ function DashboardSection({ data }: { data: DemoData }) {
                     {email.name || '-'}
                   </td>
                   <td className="hidden sm:table-cell px-3 py-3 text-xs sm:text-sm">
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                        email.registered_via === 'google'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
-                      }`}
-                    >
-                      {email.registered_via === 'google' ? 'Google' : 'Manual'}
+                    <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                      Email
                     </span>
                   </td>
                   <td className="hidden sm:table-cell px-3 py-3 text-xs sm:text-sm text-gray-600">
@@ -846,14 +840,8 @@ function EmailsSection({ data }: { data: DemoData }) {
                   {email.name || '-'}
                 </td>
                 <td className="px-6 py-4 text-sm">
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                      email.registered_via === 'google'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
-                    }`}
-                  >
-                    {email.registered_via === 'google' ? 'Google' : 'Manual'}
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                    Email
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
@@ -882,14 +870,8 @@ function EmailsSection({ data }: { data: DemoData }) {
               <p className="text-sm font-mono text-gray-900">{email.email}</p>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">{email.name || '-'}</span>
-                <span
-                  className={`px-2 py-1 rounded text-xs font-semibold ${
-                    email.registered_via === 'google'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'bg-purple-100 text-purple-700'
-                  }`}
-                >
-                  {email.registered_via === 'google' ? 'Google' : 'Manual'}
+                <span className="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700">
+                  Email
                 </span>
               </div>
               <p className="text-xs text-gray-500">

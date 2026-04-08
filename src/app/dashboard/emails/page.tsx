@@ -73,7 +73,7 @@ export default function EmailsPage() {
     const rows = emails.map((e) => [
       e.email,
       e.name || '',
-      e.registered_via === 'google' ? 'Google' : 'Manual',
+      'Email',
       new Date(e.created_at).toLocaleDateString('es-ES'),
     ]);
 
@@ -212,14 +212,8 @@ export default function EmailsPage() {
                     {email.name || '-'}
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                        email.registered_via === 'google'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
-                      }`}
-                    >
-                      {email.registered_via === 'google' ? 'Google' : 'Manual'}
+                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                      Email
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
@@ -262,14 +256,8 @@ export default function EmailsPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-xs text-gray-600">Método</p>
-                  <span
-                    className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                      email.registered_via === 'google'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
-                    }`}
-                  >
-                    {email.registered_via === 'google' ? 'Google' : 'Manual'}
+                  <span className="inline-block px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700">
+                    Email
                   </span>
                 </div>
                 <div className="text-right">
