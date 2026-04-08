@@ -105,7 +105,7 @@ function LoginForm() {
           </div>
         )}
 
-        {/* Google */}
+        {/* Google — temporalmente deshabilitado hasta configurar OAuth
         <button
           type="button"
           onClick={handleGoogle}
@@ -116,12 +116,12 @@ function LoginForm() {
           <span>{googleLoading ? 'Conectando...' : 'Continuar con Google'}</span>
         </button>
 
-        {/* Divider */}
         <div className="flex items-center gap-3 mb-5">
           <div className="flex-1 border-t border-gray-200" />
           <span className="text-xs text-gray-400 font-medium">o con email y contraseña</span>
           <div className="flex-1 border-t border-gray-200" />
         </div>
+        */}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Email */}
