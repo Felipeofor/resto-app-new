@@ -107,6 +107,12 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, [currentRestaurant]);
 
+  useEffect(() => {
+    if (!loading && !currentRestaurant) {
+      router.push('/dashboard/settings');
+    }
+  }, [loading, currentRestaurant, router]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -116,7 +122,6 @@ export default function DashboardPage() {
   }
 
   if (!currentRestaurant) {
-    router.push('/dashboard/settings');
     return null;
   }
 

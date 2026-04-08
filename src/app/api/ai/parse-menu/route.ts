@@ -17,11 +17,10 @@ interface ParseMenuRequest {
  */
 async function callGeminiAPI(
   images: string[]
-): Promise<ParsedMenuItem[] | null> {
+): Promise<ParsedMenuItem[]> {
   try {
     if (!process.env.GEMINI_API_KEY) {
-      console.log('Gemini API key not configured, skipping Gemini')
-      return null
+      throw new Error('GEMINI_API_KEY no está configurada en las variables de entorno.')
     }
 
     const imageContents = images.map((image) => {
@@ -82,14 +81,8 @@ async function callGeminiAPI(
     )
 
     if (!response.ok) {
-      const error = await response.json()
-      console.error('Gemini API error:', error)
-
-      // Check if it's a quota exceeded error
-      if (error.error?.code === 429) {
-        console.log('Gemini quota exceeded, will fallback to Claude')
-      }
-      return null
+      const errorMsg = await response.text()
+      throw new Error(`Gemini Falló (${response.status}): ${errorMsg}`)
     }
 
     const data = await response.json()
@@ -97,22 +90,20 @@ async function callGeminiAPI(
       data.candidates?.[0]?.content?.parts?.[0]?.text
 
     if (!text) {
-      console.error('No text in Gemini response')
-      return null
+      throw new Error('Gemini devolvió una respuesta vacía o sin texto.')
     }
 
     // Parse JSON from response
     const jsonMatch = text.match(/\[[\s\S]*\]/)
     if (!jsonMatch) {
-      console.error('No JSON array found in Gemini response')
-      return null
+      throw new Error('No se encontró un array JSON en la respuesta de Gemini.')
     }
 
     const items: ParsedMenuItem[] = JSON.parse(jsonMatch[0])
     return items
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini API call failed:', error)
-    return null
+    throw error // Propagate error to trigger the correct UI message
   }
 }
 
@@ -151,7 +142,7 @@ async function callClaudeAPI(
   })
 
   const requestBody = {
-    model: 'claude-3-haiku-20240307',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 4096,
     messages: [
       {
@@ -242,25 +233,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let parsedItems: ParsedMenuItem[] | null = null
+    let parsedItems: ParsedMenuItem[] = []
     let aiProvider: string = ''
 
-    // Try Gemini first (free tier)
-    parsedItems = await callGeminiAPI(images)
-
-    if (parsedItems) {
+    // Try Gemini
+    try {
+      parsedItems = await callGeminiAPI(images)
       aiProvider = 'gemini'
-    } else {
+    } catch (geminiError: any) {
+      console.log('Gemini failed, trying Claude fallback...', geminiError.message)
       // Fall back to Claude
       try {
         parsedItems = await callClaudeAPI(images)
         aiProvider = 'claude'
-      } catch (error: any) {
-        console.error('Claude API error:', error)
-        return NextResponse.json(
-          { error: `Error de IA: ${error.message || 'Intenta de nuevo.'}` },
-          { status: 500 }
-        )
+      } catch (claudeError: any) {
+        console.error('Claude API error:', claudeError)
+        // Throw a combined error so the user knows BOTH failed and why
+        throw new Error(`Ambas IAs fallaron. Gemini: ${geminiError.message}. Claude: ${claudeError.message}`)
       }
     }
 
