@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { AddToCartButton } from './AddToCartButton'
 
 interface MenuItem {
   id: string
@@ -54,7 +55,7 @@ export function Lightbox({
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+        className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-black/80 border border-white/20 rounded-full transition-colors z-[60]"
         aria-label="Cerrar"
       >
         <X className="w-6 h-6 text-white" />
@@ -65,14 +66,14 @@ export function Lightbox({
         <>
           <button
             onClick={onPrev}
-            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 border border-white/20 hover:bg-black/80 rounded-full transition-colors z-[60]"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           <button
             onClick={onNext}
-            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 border border-white/20 hover:bg-black/80 rounded-full transition-colors z-[60]"
             aria-label="Siguiente"
           >
             <ChevronRight className="w-6 h-6 text-white" />
@@ -100,7 +101,7 @@ export function Lightbox({
           </h2>
 
           <p className="text-3xl font-bold text-orange-400 mb-6">
-            €{currentItem.price.toFixed(2)}
+            {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(currentItem.price)}
           </p>
 
           {currentItem.description && (
@@ -110,8 +111,18 @@ export function Lightbox({
           )}
 
           {/* Counter */}
-          <div className="text-gray-400 text-sm">
+          <div className="text-gray-400 text-sm mb-6">
             {initialIndex + 1} de {items.length}
+          </div>
+
+          <div className="mt-auto">
+            <AddToCartButton
+              menuItemId={currentItem.id}
+              name={currentItem.name}
+              price={currentItem.price}
+              image_url={currentItem.image_url}
+              fullWidth={true}
+            />
           </div>
 
           {/* Navigation Hint */}

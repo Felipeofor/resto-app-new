@@ -77,7 +77,7 @@ function ImageLightbox({
         <div className="mt-3 text-center text-white">
           <p className="font-bold text-lg">{current.name}</p>
           <p className="text-orange-300 font-semibold">
-            ${current.price.toLocaleString('es-AR')}
+            {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(current.price)}
           </p>
           {current.description && (
             <p className="text-white/70 text-sm mt-1">{current.description}</p>
@@ -224,7 +224,7 @@ export function ListView({
                             {item.name}
                           </h3>
                           <span className="text-base font-bold text-orange-600 flex-shrink-0">
-                            ${item.price.toLocaleString('es-AR')}
+                            {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(item.price)}
                           </span>
                         </div>
                         {item.description && (

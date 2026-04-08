@@ -136,16 +136,21 @@ export function PhotoGridView({
                       {item.description}
                     </p>
                   )}
-                  <div className="flex items-center justify-between mt-auto pt-2 gap-1">
-                    <span className="text-sm font-bold text-orange-600">
-                      ${item.price.toLocaleString('es-AR')}
-                    </span>
-                    <AddToCartButton
-                      menuItemId={item.id}
-                      name={item.name}
-                      price={item.price}
-                      image_url={item.image_url}
-                    />
+                  <div className="mt-auto pt-3 border-t border-gray-50 flex flex-col gap-2.5">
+                    <div className="flex items-center">
+                      <span className="text-xl font-bold text-orange-600 block w-full text-center">
+                        {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(item.price)}
+                      </span>
+                    </div>
+                    <div className="w-full">
+                      <AddToCartButton
+                        menuItemId={item.id}
+                        name={item.name}
+                        price={item.price}
+                        image_url={item.image_url}
+                        fullWidth={true}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

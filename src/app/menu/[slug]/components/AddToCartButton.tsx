@@ -9,6 +9,7 @@ type AddToCartButtonProps = {
   name: string;
   price: number;
   image_url: string | null;
+  fullWidth?: boolean;
 };
 
 export function AddToCartButton({
@@ -16,6 +17,7 @@ export function AddToCartButton({
   name,
   price,
   image_url,
+  fullWidth = false,
 }: AddToCartButtonProps) {
   const { items, addItem, updateQuantity } = useCart();
   const [localQuantity, setLocalQuantity] = useState(1);
@@ -50,7 +52,7 @@ export function AddToCartButton({
 
   if (cartItem) {
     return (
-      <div className="flex items-center gap-1 bg-gradient-to-r from-purple-100 to-purple-50 rounded-lg p-1 border border-purple-200">
+      <div className={`flex items-center gap-1 bg-gradient-to-r from-purple-100 to-purple-50 rounded-lg p-1 border border-purple-200 ${fullWidth ? 'w-full justify-between' : ''}`}>
         <button
           onClick={handleDecrease}
           className="p-1.5 hover:bg-white rounded-md transition-colors"
@@ -75,7 +77,7 @@ export function AddToCartButton({
   return (
     <button
       onClick={handleAdd}
-      className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium px-3 py-2 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg active:scale-95 text-sm"
+      className={`flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium px-3 py-2 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg active:scale-95 text-sm ${fullWidth ? 'w-full justify-center' : ''}`}
       aria-label={`Agregar ${name} al carrito`}
     >
       <Plus className="w-4 h-4" />
