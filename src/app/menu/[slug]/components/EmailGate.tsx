@@ -287,26 +287,6 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
               </div>
             )}
 
-            {/* ── Google button ──────────────────────────── */}
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={googleLoading || isLoading}
-              className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-semibold py-3 rounded-2xl transition-all"
-            >
-              {googleLoading
-                ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                : <GoogleIcon />}
-              <span>{googleLoading ? 'Conectando...' : 'Continuar con Google'}</span>
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 border-t border-gray-100" />
-              <span className="text-xs text-gray-400">o con tu correo</span>
-              <div className="flex-1 border-t border-gray-100" />
-            </div>
-
             {/* ── Email form ─────────────────────────────── */}
             <form onSubmit={handleEmailSubmit} className="space-y-3">
               <input

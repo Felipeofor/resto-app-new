@@ -20,6 +20,7 @@ import {
   ShoppingBag,
   CreditCard,
   Lock,
+  LayoutDashboard,
 } from 'lucide-react';
 import { RestaurantProvider, useRestaurant } from '@/lib/context/restaurant-context';
 import RestaurantSelector from './components/RestaurantSelector';
@@ -110,6 +111,13 @@ function DashboardInner({
       icon: CreditCard,
       requiresPro: false,
       isSuperAdminOnly: false,
+    },
+    {
+      label: 'Panel Admin',
+      href: '/dashboard/admin',
+      icon: LayoutDashboard,
+      requiresPro: false,
+      isSuperAdminOnly: true,
     },
     {
       label: 'Gestión Pagos',

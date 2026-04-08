@@ -131,9 +131,17 @@ export default function AdminSubscriptionsPage() {
       })
       .eq('id', paymentId);
 
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
     await supabase
       .from('restaurants')
-      .update({ plan: 'pro' as const })
+      .update({
+        plan: 'pro' as const,
+        pro_started_at: now.toISOString(),
+        pro_expires_at: expiresAt.toISOString(),
+      })
       .eq('id', restaurantId);
 
     setProcessingId(null);

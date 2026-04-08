@@ -434,6 +434,86 @@ export default function SubscriptionPage() {
           </div>
         </div>
       )}
+      {/* Soluciones a Medida */}
+      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold">Soluciones a Medida</h3>
+            <p className="text-gray-400 mt-1 text-sm">
+              Llevamos tu restaurante al siguiente nivel con desarrollo personalizado
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {[
+            {
+              title: 'Tienda Virtual',
+              desc: 'E-commerce completo con carrito, pagos online y delivery integrado',
+              icon: '🛒',
+            },
+            {
+              title: 'Seguimiento en Tiempo Real',
+              desc: 'Tus clientes ven el estado de su pedido en vivo, desde la cocina hasta la entrega',
+              icon: '📍',
+            },
+            {
+              title: 'Gestion de Mesas',
+              desc: 'Reservas online, mapa interactivo de mesas y turnos automatizados',
+              icon: '🪑',
+            },
+            {
+              title: 'App Propia del Restaurante',
+              desc: 'Aplicacion movil con tu marca, notificaciones push y programa de fidelidad',
+              icon: '📱',
+            },
+            {
+              title: 'Sistema de Facturacion',
+              desc: 'Facturacion electronica integrada con AFIP y reportes contables',
+              icon: '🧾',
+            },
+            {
+              title: 'Marketing Automatizado',
+              desc: 'Campanas de email y WhatsApp segmentadas con ofertas personalizadas',
+              icon: '📣',
+            },
+          ].map((solution) => (
+            <div
+              key={solution.title}
+              className="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">{solution.icon}</span>
+                <h4 className="font-semibold text-white">{solution.title}</h4>
+              </div>
+              <p className="text-sm text-gray-400">{solution.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+          <p className="text-sm text-gray-300 mb-4">
+            Cada solucion se desarrolla a medida para tu restaurante. Contactanos para recibir una propuesta personalizada sin compromiso.
+          </p>
+          <a
+            href="https://wa.me/5491112345678?text=Hola!%20Me%20interesa%20una%20solucion%20a%20medida%20para%20mi%20restaurante"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-green-700 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.75.75 0 00.913.913l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.387 0-4.599-.798-6.375-2.144l-.447-.338-2.828.948.948-2.828-.338-.447A9.953 9.953 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z" />
+            </svg>
+            Consultar por WhatsApp
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

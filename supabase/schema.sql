@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS restaurants (
   logo_url TEXT,
   cover_url TEXT,
   plan plan_type NOT NULL DEFAULT 'free',
+  pro_started_at TIMESTAMP WITH TIME ZONE,
+  pro_expires_at TIMESTAMP WITH TIME ZONE,
   require_email BOOLEAN NOT NULL DEFAULT FALSE,
   welcome_message TEXT DEFAULT 'Bienvenido a nuestro restaurante! Gracias por visitarnos.',
   discount_text TEXT DEFAULT '10% de descuento en tu próxima visita',
