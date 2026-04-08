@@ -62,7 +62,38 @@ const SOURCE_LABELS: Record<ProspectSource, string> = {
   other: 'Otro',
 };
 
-const WHATSAPP_TEMPLATE = `Hola! 👋 Soy de *RestoQR*. Vi tu restaurante y quería mostrarte nuestra plataforma de menú digital con QR, pedidos online y más. Te puedo contar en 2 minutos, te parece?`;
+const WHATSAPP_TEMPLATE = `Hola! Como andás?
+
+Soy Felipe, te escribo porque vi tu negocio y se me ocurrió algo que te puede sumar mucho.
+
+Estamos con *RestoQR*, una herramienta que le permite a los restaurantes y comercios gastronómicos tener su *menú digital con código QR* listo en minutos. Lo mejor: *podés crear tu menú 100% gratis* y tenerlo disponible para tu comercio desde hoy, sin compromiso ni tarjeta de crédito.
+
+*Lo que te da el plan gratuito:*
+- Tu menú digital con hasta 100 productos
+- Código QR personalizado con los colores de tu marca
+- Control básico de ingresos y gastos
+- Tu logo y colores de marca integrados
+
+*Y si más adelante querés escalar*, el plan Pro ($5.000/mes) te suma:
+- Captura de menú con IA: le sacás una foto a tu carta y se carga solo
+- Pedidos online con delivery integrado
+- Métricas: cuánta gente ve tu menú, escanea el QR, se registra
+- Captura de correos de clientes con incentivos automáticos (descuentos, promos)
+- Finanzas avanzadas con desglose por categoría y exportación CSV
+- Productos ilimitados con fotos HD
+
+*Para que lo veas funcionando, te dejo dos demos en vivo:*
+
+Así lo ve tu cliente (el menú digital): https://resto-virid.vercel.app/menu/don-carlos
+Así lo ves vos (tu panel de administración): https://resto-virid.vercel.app/demo/admin
+
+Todos los beneficios:
+https://resto-virid.vercel.app
+
+Dale un vistazo tranquilo y si te copa, me decís y en 5 minutos te dejo tu menú armado con tu carta real.
+
+Abrazo!
+Felipe`;
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    Prospects CRM Page
@@ -196,7 +227,7 @@ export default function ProspectsPage() {
     } else if (!clean.startsWith('54')) {
       clean = '54' + clean;
     }
-    const msg = WHATSAPP_TEMPLATE.replace('tu restaurante', name);
+    const msg = WHATSAPP_TEMPLATE.replace('tu negocio', `*${name}*`);
     return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
   };
 
