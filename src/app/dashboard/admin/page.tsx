@@ -126,8 +126,8 @@ export default function AdminDashboardPage() {
         .order('pro_expires_at', { ascending: true }) as any),
     ]);
 
-    const restaurants = restaurantsRes.data || [];
-    const payments = paymentsRes.data || [];
+    const restaurants: any[] = restaurantsRes.data || [];
+    const payments: any[] = paymentsRes.data || [];
 
     // Calculate stats
     const proCount = restaurants.filter(r => r.plan === 'pro').length;
