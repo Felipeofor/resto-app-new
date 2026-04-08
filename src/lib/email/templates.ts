@@ -98,6 +98,11 @@ function ctaButton(text: string, url: string): string {
   </table>`
 }
 
+/* ------ Section title --------------------------------------------------------------- */
+function sectionTitle(text: string): string {
+  return `<h2 style="margin:0;font-size:22px;font-weight:800;color:#111827;letter-spacing:-0.3px;">${text}</h2>`
+}
+
 /* ------ Info row ------------------------------------------------------------------------------------------------------------------------------------ */
 function infoRow(icon: string, label: string, value: string): string {
   return `
