@@ -25,14 +25,22 @@ async function callGeminiAPI(
     }
 
     const imageContents = images.map((image) => {
-      // TODO: Handle both base64 and URLs
-      // For now, assume base64 or proper image format
+      let mimeType = 'image/jpeg'
+      let data = image
+
+      if (image.startsWith('data:')) {
+        const parts = image.split(',')
+        const header = parts[0]
+        data = parts[1]
+        
+        if (header.includes('image/png')) mimeType = 'image/png'
+        else if (header.includes('image/webp')) mimeType = 'image/webp'
+      }
+
       return {
         inline_data: {
-          mime_type: 'image/jpeg',
-          data: image.startsWith('data:')
-            ? image.split(',')[1]
-            : image,
+          mime_type: mimeType,
+          data: data,
         },
       }
     })
@@ -119,15 +127,25 @@ async function callClaudeAPI(
   }
 
   const imageContents = images.map((image) => {
-    // TODO: Handle both base64 and URLs
+    let mediaType = 'image/jpeg'
+    let data = image
+
+    if (image.startsWith('data:')) {
+      const parts = image.split(',')
+      const header = parts[0]
+      data = parts[1]
+      
+      if (header.includes('image/png')) mediaType = 'image/png'
+      else if (header.includes('image/webp')) mediaType = 'image/webp'
+      else if (header.includes('image/gif')) mediaType = 'image/gif'
+    }
+
     return {
       type: 'image' as const,
       source: {
         type: 'base64' as const,
-        media_type: 'image/jpeg' as const,
-        data: image.startsWith('data:')
-          ? image.split(',')[1]
-          : image,
+        media_type: mediaType as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
+        data: data,
       },
     }
   })
@@ -163,7 +181,7 @@ async function callClaudeAPI(
   if (!response.ok) {
     const error = await response.json()
     throw new Error(
-      `Claude API error: ${error.error?.message || 'Unknown error'}`
+      `Claude Falló: ${JSON.stringify(error)}`
     )
   }
 
