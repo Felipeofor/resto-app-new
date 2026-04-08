@@ -34,16 +34,38 @@ export default function ResetPasswordPage() {
   // Wait for Supabase to process the recovery token from the URL hash
   useEffect(() => {
     const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    
+    // 1. Check initial session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        console.log('Session detected on load');
         setSessionReady(true);
       }
     });
-    // Also check immediately in case the session is already there
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setSessionReady(true);
+
+    // 2. Listen for auth changes (PASSWORD_RECOVERY is the main one, but SIGNED_IN also works)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event);
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && session)) {
+        setSessionReady(true);
+      }
     });
-    return () => subscription.unsubscribe();
+
+    // 3. Fallback: If after 4 seconds we still don't have a session but we see a hash in the URL,
+    // try to force a user check or show an error.
+    const timer = setTimeout(async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setSessionReady(true);
+      } else if (window.location.hash.includes('access_token')) {
+        setError('No se pudo verificar el enlace. Es posible que haya expirado o sea inválido. Por favor, solicitá uno nuevo.');
+      }
+    }, 4000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   const strength = strengthLabel(password);

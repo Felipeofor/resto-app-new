@@ -122,14 +122,50 @@ export default function NewMenuItemPage() {
     }
   };
 
+  const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Canvas not supported'));
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Compression failed'));
+            const compressed = new File([blob], file.name.replace(/\.\w+$/, '.webp'), {
+              type: 'image/webp',
+            });
+            resolve(compressed);
+          },
+          'image/webp',
+          quality
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const uploadImage = async (file: File): Promise<string> => {
     const supabase = createClient();
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${currentRestaurant?.id}/${Date.now()}.${fileExt}`;
+    const compressed = await compressImage(file);
+    const fileName = `${currentRestaurant?.id}/${Date.now()}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from('menu-images')
-      .upload(fileName, file);
+      .upload(fileName, compressed);
 
     if (uploadError) throw uploadError;
 

@@ -254,7 +254,7 @@ function DashboardInner({
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        <div className="p-6 md:p-8">{children}</div>
+        <div className="p-6 md:p-8 pt-16 md:pt-8">{children}</div>
       </div>
     </div>
   );

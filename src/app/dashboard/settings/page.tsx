@@ -698,13 +698,13 @@ export default function SettingsPage() {
               {/* Custom color */}
               <label
                 title="Color personalizado"
-                className="w-9 h-9 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-purple-400 transition-colors overflow-hidden"
+                className="relative w-9 h-9 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-purple-400 transition-colors overflow-hidden"
               >
                 <input
                   type="color"
                   value={settings.primary_color || '#f97316'}
                   onChange={(e) => setProp('primary_color', e.target.value)}
-                  className="w-10 h-10 opacity-0 absolute cursor-pointer"
+                  className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
                 />
                 <span className="text-xs text-gray-400 select-none pointer-events-none">+</span>
               </label>

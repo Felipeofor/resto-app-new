@@ -416,14 +416,14 @@ export default function QRCodePage() {
           {/* URL Section */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">URL del Menú</h3>
-            <div className="flex gap-2">
-              <div className="flex-1 flex items-center px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="min-w-0 flex-1 flex items-center px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl">
                 <Smartphone className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" />
                 <span className="text-sm text-gray-600 font-mono truncate">{menuUrl}</span>
               </div>
               <button
                 onClick={handleCopyUrl}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all flex-shrink-0 ${
+                className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all flex-shrink-0 ${
                   copied
                     ? 'bg-green-50 text-green-700 border border-green-200'
                     : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
