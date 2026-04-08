@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Plus,
@@ -29,6 +30,7 @@ interface RecentEmail {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { currentRestaurant } = useRestaurant();
   const [stats, setStats] = useState<DashboardStats>({
     totalItems: 0,
@@ -113,11 +115,8 @@ export default function DashboardPage() {
   }
 
   if (!currentRestaurant) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">No se encontró restaurante</div>
-      </div>
-    );
+    router.push('/dashboard/settings');
+    return null;
   }
 
   return (
