@@ -41,8 +41,11 @@ export default function SubscriptionPage() {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [proPrice, setProPrice] = useState(5000);
   const [formError, setFormError] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly');
+  const [proExpiresAt, setProExpiresAt] = useState<string | null>(null);
 
   const isPro = currentRestaurant?.plan === 'pro';
+  const annualPrice = proPrice * 10;
 
   useEffect(() => {
     if (!currentRestaurant) return;
@@ -88,6 +91,17 @@ export default function SubscriptionPage() {
       .order('created_at', { ascending: false });
 
     setPayments(paymentsData || []);
+
+    // Fetch expiry date
+    const { data: restoData } = await supabase
+      .from('restaurants')
+      .select('pro_expires_at' as any)
+      .eq('id', currentRestaurant!.id)
+      .single() as any;
+    if (restoData?.pro_expires_at) {
+      setProExpiresAt(restoData.pro_expires_at);
+    }
+
     setLoading(false);
   };
 
@@ -132,13 +146,15 @@ export default function SubscriptionPage() {
         .getPublicUrl(uploadData.path);
 
       // Create payment record
+      const paymentAmount = selectedPlan === 'annual' ? annualPrice : proPrice;
       const { error } = await supabase.from('subscription_payments').insert({
         restaurant_id: currentRestaurant.id,
         user_id: user.id,
-        amount: proPrice,
+        amount: paymentAmount,
         transfer_receipt_url: urlData.publicUrl,
         status: 'pending' as const,
-      });
+        notes: selectedPlan === 'annual' ? 'Plan anual' : 'Plan mensual',
+      } as any);
 
       if (error) {
         console.error('Payment creation error:', error);
@@ -186,7 +202,7 @@ export default function SubscriptionPage() {
 
       {/* Current plan */}
       <div className={`rounded-2xl p-6 border-2 ${isPro ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'}`}>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               {isPro ? (
@@ -204,24 +220,49 @@ export default function SubscriptionPage() {
                 : 'Tenés acceso al menú digital y QR. Actualizá a Pro para desbloquear todo.'}
             </p>
           </div>
-          {isPro && (
-            <div className="text-right">
-              <p className="text-2xl font-bold text-gray-900">{formattedPrice}</p>
-              <p className="text-sm text-gray-500">/mes</p>
-            </div>
-          )}
+          {isPro && proExpiresAt && (() => {
+            const days = Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            const isExpired = days <= 0;
+            const isUrgent = days > 0 && days <= 5;
+            return (
+              <div className={`rounded-xl px-4 py-3 text-center flex-shrink-0 ${
+                isExpired
+                  ? 'bg-red-100 border border-red-300'
+                  : isUrgent
+                    ? 'bg-orange-100 border border-orange-300'
+                    : 'bg-green-100 border border-green-300'
+              }`}>
+                <p className={`text-2xl font-bold ${
+                  isExpired ? 'text-red-700' : isUrgent ? 'text-orange-700' : 'text-green-700'
+                }`}>
+                  {isExpired ? 'Vencido' : `${days} dias`}
+                </p>
+                <p className={`text-xs font-medium ${
+                  isExpired ? 'text-red-600' : isUrgent ? 'text-orange-600' : 'text-green-600'
+                }`}>
+                  {isExpired
+                    ? 'Renova tu plan para no perder acceso'
+                    : `Vence el ${new Date(proExpiresAt).toLocaleDateString('es-AR')}`}
+                </p>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
-      {/* Pro features (show when free) */}
-      {!isPro && (
+      {/* Pro features + plan selector (show when free or renewing) */}
+      {(!isPro || (proExpiresAt && Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) <= 5)) && (
         <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 text-white">
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-5 h-5 text-yellow-300" />
-            <h3 className="text-lg font-bold">Plan Pro - {formattedPrice}/mes</h3>
+            <h3 className="text-lg font-bold">
+              {isPro ? 'Renova tu Plan Pro' : 'Actualizá a Pro'}
+            </h3>
           </div>
           <p className="text-purple-100 mb-4">
-            Desbloqueá todas las funcionalidades para tu restaurante:
+            {isPro
+              ? 'Tu plan está por vencer. Renová para no perder acceso:'
+              : 'Desbloqueá todas las funcionalidades para tu restaurante:'}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             {proFeatures.map((f) => (
@@ -232,11 +273,44 @@ export default function SubscriptionPage() {
             ))}
           </div>
 
+          {/* Plan selector: Monthly vs Annual */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <button
+              type="button"
+              onClick={() => setSelectedPlan('monthly')}
+              className={`relative rounded-xl p-4 border-2 transition-all text-left ${
+                selectedPlan === 'monthly'
+                  ? 'border-yellow-400 bg-white/15'
+                  : 'border-white/20 bg-white/5 hover:bg-white/10'
+              }`}
+            >
+              <p className="font-bold text-lg">{formattedPrice}</p>
+              <p className="text-sm text-purple-200">Mensual</p>
+              <p className="text-xs text-purple-300 mt-1">30 dias de acceso</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedPlan('annual')}
+              className={`relative rounded-xl p-4 border-2 transition-all text-left ${
+                selectedPlan === 'annual'
+                  ? 'border-yellow-400 bg-white/15'
+                  : 'border-white/20 bg-white/5 hover:bg-white/10'
+              }`}
+            >
+              <div className="absolute -top-2.5 right-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full">
+                2 meses gratis
+              </div>
+              <p className="font-bold text-lg">${annualPrice.toLocaleString('es-AR')}</p>
+              <p className="text-sm text-purple-200">Anual</p>
+              <p className="text-xs text-purple-300 mt-1">365 dias de acceso</p>
+            </button>
+          </div>
+
           {hasPendingPayment ? (
             <div className="bg-yellow-400/20 rounded-xl p-4 flex items-center gap-3">
               <Clock className="w-5 h-5 text-yellow-300" />
               <p className="text-sm text-yellow-100">
-                Tu pago está pendiente de aprobación. Te avisaremos cuando sea revisado.
+                Tu pago esta pendiente de aprobacion. Te avisaremos cuando sea revisado.
               </p>
             </div>
           ) : (
@@ -244,7 +318,7 @@ export default function SubscriptionPage() {
               onClick={() => setShowPaymentForm(true)}
               className="bg-white text-purple-700 font-semibold px-6 py-3 rounded-xl hover:bg-purple-50 transition-colors"
             >
-              Actualizar a Pro
+              {isPro ? 'Renovar plan' : 'Actualizar a Pro'}
             </button>
           )}
         </div>
@@ -310,7 +384,9 @@ export default function SubscriptionPage() {
               </div>
             </div>
             <p className="text-blue-700 text-sm mt-2">
-              Monto: <span className="font-bold">{formattedPrice}</span> (mensual)
+              Monto: <span className="font-bold">
+                ${(selectedPlan === 'annual' ? annualPrice : proPrice).toLocaleString('es-AR')}
+              </span> ({selectedPlan === 'annual' ? 'anual - 365 dias' : 'mensual - 30 dias'})
             </p>
           </div>
 

@@ -93,9 +93,9 @@ export default function AdminDashboardPage() {
       // All restaurants
       supabase
         .from('restaurants')
-        .select('id, name, slug, plan, created_at, pro_expires_at, profiles:owner_id(email)')
+        .select('id, name, slug, plan, created_at, profiles:owner_id(email)')
         .eq('is_active', true)
-        .order('created_at', { ascending: false }),
+        .order('created_at', { ascending: false }) as any,
 
       // Total emails
       supabase
@@ -117,13 +117,13 @@ export default function AdminDashboardPage() {
         .limit(5),
 
       // Expiring soon (next 10 days)
-      supabase
+      (supabase
         .from('restaurants')
         .select('id, name, pro_expires_at, profiles:owner_id(email)')
         .eq('plan', 'pro')
         .not('pro_expires_at', 'is', null)
         .lte('pro_expires_at', new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString())
-        .order('pro_expires_at', { ascending: true }),
+        .order('pro_expires_at', { ascending: true }) as any),
     ]);
 
     const restaurants = restaurantsRes.data || [];

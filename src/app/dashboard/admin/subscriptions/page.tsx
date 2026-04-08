@@ -122,6 +122,10 @@ export default function AdminSubscriptionsPage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Find the payment to check if it's annual
+    const payment = payments.find(p => p.id === paymentId);
+    const isAnnual = payment?.notes?.toLowerCase().includes('anual');
+
     await supabase
       .from('subscription_payments')
       .update({
@@ -133,16 +137,16 @@ export default function AdminSubscriptionsPage() {
 
     const now = new Date();
     const expiresAt = new Date(now);
-    expiresAt.setDate(expiresAt.getDate() + 30);
+    expiresAt.setDate(expiresAt.getDate() + (isAnnual ? 365 : 30));
 
-    await supabase
+    await (supabase
       .from('restaurants')
       .update({
-        plan: 'pro' as const,
+        plan: 'pro',
         pro_started_at: now.toISOString(),
         pro_expires_at: expiresAt.toISOString(),
-      })
-      .eq('id', restaurantId);
+      } as any)
+      .eq('id', restaurantId));
 
     setProcessingId(null);
     fetchPayments();
@@ -360,9 +364,20 @@ export default function AdminSubscriptionsPage() {
                     })}
                   </p>
                 </div>
-                <p className="text-xl font-bold text-gray-900">
-                  ${payment.amount.toLocaleString('es-AR')}
-                </p>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-gray-900">
+                    ${payment.amount.toLocaleString('es-AR')}
+                  </p>
+                  {payment.notes && payment.status === 'pending' && (
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      payment.notes.toLowerCase().includes('anual')
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {payment.notes.toLowerCase().includes('anual') ? 'Anual' : 'Mensual'}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Receipt */}
