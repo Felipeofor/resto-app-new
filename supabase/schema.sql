@@ -143,6 +143,35 @@ CREATE TABLE IF NOT EXISTS ai_usage (
 );
 
 -- ============================================
+-- PROSPECTS CRM (super admin only)
+-- ============================================
+
+DO $$ BEGIN CREATE TYPE prospect_status AS ENUM ('new', 'contacted', 'interested', 'converted', 'discarded'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE prospect_source AS ENUM ('google_maps', 'instagram', 'referral', 'event', 'delivery_app', 'other'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE TABLE IF NOT EXISTS prospects (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_name TEXT NOT NULL,
+  owner_name TEXT,
+  phone TEXT,
+  email TEXT,
+  instagram TEXT,
+  address TEXT,
+  city TEXT,
+  status prospect_status NOT NULL DEFAULT 'new',
+  source prospect_source NOT NULL DEFAULT 'other',
+  notes TEXT,
+  last_contacted_at TIMESTAMP WITH TIME ZONE,
+  next_followup_at DATE,
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE INDEX IF NOT EXISTS idx_prospects_status ON prospects(status);
+CREATE INDEX IF NOT EXISTS idx_prospects_city ON prospects(city);
+
+-- ============================================
 -- FINANCE TABLES
 -- ============================================
 

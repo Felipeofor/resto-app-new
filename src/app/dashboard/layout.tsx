@@ -22,6 +22,7 @@ import {
   Lock,
   LayoutDashboard,
   Wallet,
+  UserSearch,
 } from 'lucide-react';
 import { RestaurantProvider, useRestaurant } from '@/lib/context/restaurant-context';
 import RestaurantSelector from './components/RestaurantSelector';
@@ -62,6 +63,13 @@ function DashboardInner({
       label: 'Gestión Pagos',
       href: '/dashboard/admin/subscriptions',
       icon: CreditCard,
+      requiresPro: false,
+      isSuperAdminOnly: true,
+    },
+    {
+      label: 'Prospectos',
+      href: '/dashboard/admin/prospects',
+      icon: UserSearch,
       requiresPro: false,
       isSuperAdminOnly: true,
     },
