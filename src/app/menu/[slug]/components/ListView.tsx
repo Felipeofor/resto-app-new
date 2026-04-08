@@ -29,7 +29,7 @@ interface ListViewProps {
   primaryColor?: string
 }
 
-/* ── Lightbox ─────────────────────────────────────────────── */
+/* ------ Lightbox --------------------------------------------------------------------------------------------------------------------------------------------- */
 function ImageLightbox({
   item,
   items,
@@ -106,7 +106,7 @@ function ImageLightbox({
   )
 }
 
-/* ── ListView ─────────────────────────────────────────────── */
+/* ------ ListView --------------------------------------------------------------------------------------------------------------------------------------------- */
 export function ListView({
   items,
   categories,
@@ -200,7 +200,7 @@ export function ListView({
                     className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100"
                   >
                     <div className="flex gap-3">
-                      {/* Thumbnail — tap to enlarge */}
+                      {/* Thumbnail --- tap to enlarge */}
                       <div className="flex-shrink-0">
                         <button
                           onClick={() => item.image_url && setLightboxItem(item)}

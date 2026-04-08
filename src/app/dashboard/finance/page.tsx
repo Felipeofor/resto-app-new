@@ -16,7 +16,7 @@ import {
 import { useRestaurant } from '@/lib/context/restaurant-context';
 import { createClient } from '@/lib/supabase/client';
 
-/* ── Types ──────────────────────────────────────────────── */
+/* ------ Types ------------------------------------------------------------------------------------------------------------------------------------------------ */
 interface FinanceCategory {
   id: string;
   name: string;
@@ -35,7 +35,7 @@ interface Transaction {
   category_icon?: string;
 }
 
-/* ── Default categories ─────────────────────────────────── */
+/* ------ Default categories --------------------------------------------------------------------------------------------------------- */
 const DEFAULT_CATEGORIES: { name: string; type: 'income' | 'expense'; icon: string }[] = [
   { name: 'Ventas', type: 'income', icon: '💰' },
   { name: 'Delivery', type: 'income', icon: '🛵' },
@@ -52,9 +52,9 @@ const DEFAULT_CATEGORIES: { name: string; type: 'income' | 'expense'; icon: stri
   { name: 'Otros gastos', type: 'expense', icon: '📤' },
 ];
 
-/* ═══════════════════════════════════════════════════════════
+/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    Finance Page
-══════════════════════════════════════════════════════════ */
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 export default function FinancePage() {
   const { currentRestaurant } = useRestaurant();
   const isPro = currentRestaurant?.plan === 'pro';
@@ -436,7 +436,7 @@ export default function FinancePage() {
         )}
       </div>
 
-      {/* ── New transaction modal ──────────────────────── */}
+      {/* ------ New transaction modal ------------------------------------------------------------------------ */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-5">
@@ -551,7 +551,7 @@ export default function FinancePage() {
         </div>
       )}
 
-      {/* ── New category modal ─────────────────────────── */}
+      {/* ------ New category modal --------------------------------------------------------------------------------- */}
       {showCategoryForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4">

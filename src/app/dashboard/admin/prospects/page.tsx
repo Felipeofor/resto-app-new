@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
-/* ── Types ──────────────────────────────────────────────── */
+/* ------ Types ------------------------------------------------------------------------------------------------------------------------------------------------ */
 type ProspectStatus = 'new' | 'contacted' | 'interested' | 'converted' | 'discarded';
 type ProspectSource = 'google_maps' | 'instagram' | 'referral' | 'event' | 'delivery_app' | 'other';
 
@@ -64,9 +64,9 @@ const SOURCE_LABELS: Record<ProspectSource, string> = {
 
 const WHATSAPP_TEMPLATE = `Hola! 👋 Soy de *RestoQR*. Vi tu restaurante y quería mostrarte nuestra plataforma de menú digital con QR, pedidos online y más. Te puedo contar en 2 minutos, te parece?`;
 
-/* ═══════════════════════════════════════════════════════════
+/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    Prospects CRM Page
-══════════════════════════════════════════════════════════ */
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 export default function ProspectsPage() {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
@@ -462,7 +462,7 @@ export default function ProspectsPage() {
         Mostrando {filtered.length} de {prospects.length} prospectos
       </p>
 
-      {/* ── Form modal ─────────────────────────────────── */}
+      {/* ------ Form modal --------------------------------------------------------------------------------------------------------- */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">

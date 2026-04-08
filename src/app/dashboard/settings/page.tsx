@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { useRestaurant } from '@/lib/context/restaurant-context';
 import { createClient } from '@/lib/supabase/client';
 
-/* ── Types ──────────────────────────────────────────────── */
+/* ------ Types ------------------------------------------------------------------------------------------------------------------------------------------------ */
 interface RestaurantSettings {
   name: string;
   description: string | null;
@@ -51,7 +51,7 @@ interface RestaurantSettings {
   plan: 'free' | 'pro';
 }
 
-/* ── Collapsible section wrapper ────────────────────────── */
+/* ------ Collapsible section wrapper ------------------------------------------------------------------------------ */
 function Section({
   icon: Icon,
   title,
@@ -93,7 +93,7 @@ function Section({
   );
 }
 
-/* ── Field wrapper ──────────────────────────────────────── */
+/* ------ Field wrapper ------------------------------------------------------------------------------------------------------------------------ */
 function Field({
   label,
   hint,
@@ -115,7 +115,7 @@ function Field({
 const inputCls =
   'w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition-shadow';
 
-/* ── Image uploader ─────────────────────────────────────── */
+/* ------ Image uploader --------------------------------------------------------------------------------------------------------------------- */
 function ImageUploader({
   label,
   hint,
@@ -158,7 +158,7 @@ function ImageUploader({
   );
 }
 
-/* ── Color swatches ─────────────────────────────────────── */
+/* ------ Color swatches --------------------------------------------------------------------------------------------------------------------- */
 const PRESET_COLORS = [
   { label: 'Naranja', value: '#f97316' },
   { label: 'Rojo', value: '#ef4444' },
@@ -170,9 +170,9 @@ const PRESET_COLORS = [
   { label: 'Negro', value: '#111827' },
 ];
 
-/* ═══════════════════════════════════════════════════════════
+/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    Create Restaurant Form (shown when user has no restaurant)
-══════════════════════════════════════════════════════════ */
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 function CreateRestaurantForm({ onCreated }: { onCreated: () => Promise<void> }) {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -284,9 +284,9 @@ function CreateRestaurantForm({ onCreated }: { onCreated: () => Promise<void> })
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    Main Page
-══════════════════════════════════════════════════════════ */
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 export default function SettingsPage() {
   const { currentRestaurant, refetch } = useRestaurant();
   const [settings, setSettings] = useState<RestaurantSettings | null>(null);
@@ -428,7 +428,7 @@ export default function SettingsPage() {
     }
   };
 
-  /* ── Render ─────────────────────────────────────────────── */
+  /* ------ Render --------------------------------------------------------------------------------------------------------------------------------------------- */
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -484,7 +484,7 @@ export default function SettingsPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* ── 1. Info del local ─────────────────────────────── */}
+        {/* ------ 1. Info del local --------------------------------------------------------------------------------------------- */}
         <Section
           icon={Store}
           title="Información del Local"
@@ -506,7 +506,7 @@ export default function SettingsPage() {
               name="description"
               value={settings.description || ''}
               onChange={set}
-              placeholder="Auténtica parrilla argentina desde 1985…"
+              placeholder="Auténtica parrilla argentina desde 1985--�"
               rows={3}
               className={inputCls}
             />
@@ -563,7 +563,7 @@ export default function SettingsPage() {
           />
         </Section>
 
-        {/* ── 2. Pagos y delivery ────────────────────────────── */}
+        {/* ------ 2. Pagos y delivery ------------------------------------------------------------------------------------------ */}
         <Section
           icon={CreditCard}
           title="Pagos y Delivery"
@@ -649,7 +649,7 @@ export default function SettingsPage() {
                     name="transfer_bank"
                     value={settings.transfer_bank || ''}
                     onChange={set}
-                    placeholder="Mercado Pago, Santander…"
+                    placeholder="Mercado Pago, Santander--�"
                     className={inputCls}
                   />
                 </Field>
@@ -669,7 +669,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        {/* ── 3. Personalización Visual ─────────────────────── */}
+        {/* ------ 3. Personalización Visual --------------------------------------------------------------------- */}
         <Section
           icon={Palette}
           title="Personalización Visual"
@@ -758,7 +758,7 @@ export default function SettingsPage() {
           </Field>
         </Section>
 
-        {/* ── 4. Incentivo de Email ─────────────────────────── */}
+        {/* ------ 4. Incentivo de Email --------------------------------------------------------------------------------- */}
         <Section
           icon={Gift}
           title="Incentivo para Captura de Email"
@@ -771,7 +771,7 @@ export default function SettingsPage() {
                 { value: 'discount', emoji: '🏷️', label: 'Descuento' },
                 { value: 'free_item', emoji: '🎁', label: 'Producto gratis' },
                 { value: 'exclusive', emoji: '👑', label: 'Acceso exclusivo' },
-                { value: 'loyalty', emoji: '⭐', label: 'Puntos / Fidelidad' },
+                { value: 'loyalty', emoji: '-�-', label: 'Puntos / Fidelidad' },
               ] as const).map((opt) => (
                 <button
                   key={opt.value}
@@ -844,7 +844,7 @@ export default function SettingsPage() {
                 <div className="w-9 h-9 rounded-lg bg-purple-500 flex items-center justify-center text-lg flex-shrink-0">
                   {settings.incentive_type === 'discount' ? '🏷️'
                     : settings.incentive_type === 'free_item' ? '🎁'
-                    : settings.incentive_type === 'exclusive' ? '👑' : '⭐'}
+                    : settings.incentive_type === 'exclusive' ? '👑' : '-�-'}
                 </div>
                 <div>
                   <p className="font-black text-gray-900">{settings.incentive_title}</p>
@@ -860,7 +860,7 @@ export default function SettingsPage() {
           )}
         </Section>
 
-        {/* ── 5. Configuración del Menú ─────────────────────── */}
+        {/* ------ 5. Configuración del Menú --------------------------------------------------------------------- */}
         <Section
           icon={SlidersHorizontal}
           title="Configuración del Menú"
@@ -914,19 +914,19 @@ export default function SettingsPage() {
             <div>
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Plan actual</p>
               <p className="text-xl font-bold text-purple-700 mt-0.5">
-                {settings.plan === 'pro' ? '⭐ Pro' : 'Gratuito'}
+                {settings.plan === 'pro' ? '-�- Pro' : 'Gratuito'}
               </p>
             </div>
             <Link
               href="/dashboard/subscription"
               className="text-sm text-purple-600 font-semibold hover:text-purple-800 transition-colors"
             >
-              Ver planes →
+              Ver planes -��
             </Link>
           </div>
         </Section>
 
-        {/* ── Sticky save button ────────────────────────────── */}
+        {/* ------ Sticky save button ------------------------------------------------------------------------------------------ */}
         <div className="sticky bottom-4 z-10">
           <button
             type="submit"

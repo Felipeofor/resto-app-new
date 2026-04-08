@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Loader2, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import { signUp, signInWithGoogle } from '@/lib/auth/actions';
 
-/* ── Google "G" icon ────────────────────────────────────── */
+/* ------ Google "G" icon ------------------------------------------------------------------------------------------------------------------ */
 function GoogleIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" className="flex-shrink-0">
@@ -18,7 +18,7 @@ function GoogleIcon() {
   );
 }
 
-/* ── Password strength ──────────────────────────────────── */
+/* ------ Password strength ------------------------------------------------------------------------------------------------------------ */
 function passwordStrength(p: string) {
   if (!p) return { score: 0, label: '', color: '' };
   let s = 0;
@@ -34,7 +34,7 @@ function passwordStrength(p: string) {
   return { score: s, label: 'Muy fuerte', color: 'bg-green-600' };
 }
 
-/* ── Error translation ──────────────────────────────────── */
+/* ------ Error translation ------------------------------------------------------------------------------------------------------------ */
 function translateSupabaseError(msg: string): string {
   const m = msg.toLowerCase();
   if (m.includes('user already registered') || m.includes('already been registered'))
@@ -54,7 +54,7 @@ function translateSupabaseError(msg: string): string {
   return msg;
 }
 
-/* ── Field wrapper ──────────────────────────────────────── */
+/* ------ Field wrapper ------------------------------------------------------------------------------------------------------------------------ */
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
   return (
@@ -65,9 +65,9 @@ function FieldError({ msg }: { msg?: string }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    Register Page
-══════════════════════════════════════════════════════════ */
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
@@ -178,7 +178,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Google — temporalmente deshabilitado hasta configurar OAuth
+        {/* Google --- temporalmente deshabilitado hasta configurar OAuth
         <button
           type="button"
           onClick={handleGoogle}

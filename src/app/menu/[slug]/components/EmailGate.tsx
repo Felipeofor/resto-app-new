@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Loader2, Tag, Gift, Star, Crown, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-/* ── Types ──────────────────────────────────────────────── */
+/* ------ Types ------------------------------------------------------------------------------------------------------------------------------------------------ */
 export type IncentiveType = 'discount' | 'free_item' | 'exclusive' | 'loyalty' | 'none'
 
 interface Restaurant {
@@ -26,7 +26,7 @@ interface EmailGateProps {
   onSkip?: () => void
 }
 
-/* ── Google icon ────────────────────────────────────────── */
+/* ------ Google icon ------------------------------------------------------------------------------------------------------------------------------ */
 function GoogleIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -38,7 +38,7 @@ function GoogleIcon() {
   )
 }
 
-/* ── Incentive config ───────────────────────────────────── */
+/* ------ Incentive config --------------------------------------------------------------------------------------------------------------- */
 const INCENTIVE_DEFAULTS: Record<
   IncentiveType,
   { icon: React.ElementType; emoji: string; badgeColor: string; textColor: string; bg: string }
@@ -80,7 +80,7 @@ const INCENTIVE_DEFAULTS: Record<
   },
 }
 
-/* ── API helper ─────────────────────────────────────────── */
+/* ------ API helper --------------------------------------------------------------------------------------------------------------------------------- */
 async function registerEmailOnServer(
   restaurantId: string,
   email: string,
@@ -99,9 +99,9 @@ async function registerEmailOnServer(
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    EmailGate
-══════════════════════════════════════════════════════════ */
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -198,7 +198,7 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-          {/* ── Hero header ───────────────────────────────── */}
+          {/* ------ Hero header --------------------------------------------------------------------------------------------------- */}
           <div
             className="px-8 pt-8 pb-6 text-center"
             style={{ background: `linear-gradient(135deg, ${primaryColor}18, ${primaryColor}08)` }}
@@ -220,7 +220,7 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
 
           <div className="px-8 pb-8 pt-4 space-y-5">
 
-            {/* ── Incentive card ─────────────────────────── */}
+            {/* ------ Incentive card --------------------------------------------------------------------------------- */}
             {showIncentive && (
               <div className={`rounded-2xl bg-gradient-to-br ${ic.bg} border border-white shadow-inner p-4`}>
                 {/* Badge */}
@@ -268,7 +268,7 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
               </div>
             )}
 
-            {/* ── Call to action ─────────────────────────── */}
+            {/* ------ Call to action --------------------------------------------------------------------------------- */}
             <div className="text-center">
               <p className="text-sm font-semibold text-gray-700">
                 {showIncentive
@@ -280,14 +280,14 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
               </p>
             </div>
 
-            {/* ── Error ──────────────────────────────────── */}
+            {/* ------ Error ------------------------------------------------------------------------------------------------------------ */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-sm text-red-700">
                 {error}
               </div>
             )}
 
-            {/* ── Email form ─────────────────────────────── */}
+            {/* ------ Email form --------------------------------------------------------------------------------------------- */}
             <form onSubmit={handleEmailSubmit} className="space-y-3">
               <input
                 type="email"
@@ -308,14 +308,14 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /><span>Registrando...</span></>
                 ) : showIncentive ? (
-                  `¡Quiero ${restaurant.incentive_title}! →`
+                  `¡Quiero ${restaurant.incentive_title}! -��`
                 ) : (
-                  'Ver el menú →'
+                  'Ver el menú -��'
                 )}
               </button>
             </form>
 
-            {/* ── Skip ───────────────────────────────────── */}
+            {/* ------ Skip --------------------------------------------------------------------------------------------------------------- */}
             {onSkip && (
               <div className="text-center pt-1">
                 <button
@@ -332,11 +332,11 @@ export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps)
 
         {/* Trust badges */}
         <div className="flex justify-center gap-4 mt-4 text-xs text-gray-400">
-          <span>🔒 Correo seguro</span>
+          <span>�-� Correo seguro</span>
           <span>·</span>
           <span>🚫 Sin spam</span>
           <span>·</span>
-          <span>✋ Baja cuando quieras</span>
+          <span>-�� Baja cuando quieras</span>
         </div>
       </div>
     </div>

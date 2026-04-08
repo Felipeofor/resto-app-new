@@ -51,7 +51,7 @@ function DashboardInner({
   const isPro = currentRestaurant?.plan === 'pro' || user.role === 'super_admin';
 
   const navItems = [
-    // ── Super Admin ──────────────────────────
+    // ------ Super Admin ------------------------------------------------------------------------------
     {
       label: 'Panel Admin',
       href: '/dashboard/admin',
@@ -80,7 +80,7 @@ function DashboardInner({
       requiresPro: false,
       isSuperAdminOnly: true,
     },
-    // ── Restaurante ──────────────────────────
+    // ------ Restaurante ------------------------------------------------------------------------------
     {
       label: 'Mi Restaurante',
       href: '/dashboard',

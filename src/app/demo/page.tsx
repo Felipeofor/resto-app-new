@@ -88,9 +88,11 @@ export default function DemoPage() {
               {[
                 'Dashboard con estadisticas',
                 'Gestion de menu y categorias',
-                'Vista de pedidos',
-                'Emails recolectados',
+                'Control de finanzas',
+                'Sistema de pedidos y delivery',
+                'Captura de emails automatica',
                 'Metricas y analiticas',
+                'Personalizacion visual completa',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-sm text-gray-700">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
@@ -121,10 +123,10 @@ export default function DemoPage() {
             </p>
             <ul className="space-y-2 mb-6">
               {[
-                'Menu digital completo',
+                'Menu digital con fotos HD',
                 'Navegacion por categorias',
-                'Carrito de compras',
-                'Realizar pedidos',
+                'Carrito y pedidos online',
+                'Descuentos e incentivos',
                 'Diseno mobile-first',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-sm text-gray-700">

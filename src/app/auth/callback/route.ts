@@ -7,8 +7,8 @@ import { restaurantOwnerWelcomeTemplate } from '@/lib/email/templates'
  * Handles Supabase OAuth & email confirmation callbacks.
  *
  * Two flows:
- *  1. OAuth / PKCE  → ?code=...
- *  2. Email confirm → ?token_hash=...&type=signup  (or recovery, invite, etc.)
+ *  1. OAuth / PKCE  -�� ?code=...
+ *  2. Email confirm -�� ?token_hash=...&type=signup  (or recovery, invite, etc.)
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // ── Flow 1: email confirmation / magic-link (token_hash) ──
+  // ------ Flow 1: email confirmation / magic-link (token_hash) ------
   if (token_hash && type) {
     const supabase = await createClient()
     const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash, type })
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
           await resend.emails.send({
             from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
             to: user.email!,
-            subject: '¡Bienvenido a RestoQR! Tu panel está listo 🚀',
+            subject: '¡Bienvenido a RestoQR! Tu panel está listo �-',
             html: restaurantOwnerWelcomeTemplate({
               ownerName,
               dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://resto-virid.vercel.app'}/dashboard`,
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}${next}`)
   }
 
-  // ── Flow 2: OAuth / PKCE (code) ──
+  // ------ Flow 2: OAuth / PKCE (code) ------
   if (code) {
     const supabase = await createClient()
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
@@ -105,6 +105,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}${next}`)
   }
 
-  // No valid params — redirect to login
+  // No valid params --- redirect to login
   return NextResponse.redirect(`${origin}/login`)
 }
