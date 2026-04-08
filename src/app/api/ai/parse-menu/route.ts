@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
+    const currentMonth = new Date().toISOString().slice(0, 7) + '-01' // YYYY-MM-DD
     const { data: usage } = await supabase
       .from('ai_usage')
       .select('id, photos_processed')

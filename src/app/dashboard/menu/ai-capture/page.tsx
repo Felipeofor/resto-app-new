@@ -41,7 +41,7 @@ export default function AICapturePageClient() {
       .from('ai_usage')
       .select('photos_processed')
       .eq('restaurant_id', currentRestaurant.id)
-      .eq('month', new Date().toISOString().slice(0, 7))
+      .eq('month', new Date().toISOString().slice(0, 7) + '-01')
       .maybeSingle()
 
     setUsage({
