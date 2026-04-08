@@ -50,6 +50,29 @@ function DashboardInner({
   const isPro = currentRestaurant?.plan === 'pro' || user.role === 'super_admin';
 
   const navItems = [
+    // ── Super Admin ──────────────────────────
+    {
+      label: 'Panel Admin',
+      href: '/dashboard/admin',
+      icon: LayoutDashboard,
+      requiresPro: false,
+      isSuperAdminOnly: true,
+    },
+    {
+      label: 'Gestión Pagos',
+      href: '/dashboard/admin/subscriptions',
+      icon: CreditCard,
+      requiresPro: false,
+      isSuperAdminOnly: true,
+    },
+    {
+      label: 'Todos los Restaurantes',
+      href: '/dashboard/restaurants',
+      icon: ChefHat,
+      requiresPro: false,
+      isSuperAdminOnly: true,
+    },
+    // ── Restaurante ──────────────────────────
     {
       label: 'Mi Restaurante',
       href: '/dashboard',
@@ -119,27 +142,6 @@ function DashboardInner({
       icon: CreditCard,
       requiresPro: false,
       isSuperAdminOnly: false,
-    },
-    {
-      label: 'Panel Admin',
-      href: '/dashboard/admin',
-      icon: LayoutDashboard,
-      requiresPro: false,
-      isSuperAdminOnly: true,
-    },
-    {
-      label: 'Gestión Pagos',
-      href: '/dashboard/admin/subscriptions',
-      icon: CreditCard,
-      requiresPro: false,
-      isSuperAdminOnly: true,
-    },
-    {
-      label: 'Todos los Restaurantes',
-      href: '/dashboard/restaurants',
-      icon: ChefHat,
-      requiresPro: false,
-      isSuperAdminOnly: true,
     },
     {
       label: 'Configuración',
