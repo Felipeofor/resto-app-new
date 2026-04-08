@@ -97,7 +97,7 @@ export default function FinancePage() {
 
     // Load categories, create defaults if none exist
     const { data: cats } = await supabase
-      .from('finance_categories')
+      .from('finance_categories' as any)
       .select('id, name, type, icon')
       .eq('restaurant_id', currentRestaurant.id)
       .order('name') as any;
@@ -114,7 +114,7 @@ export default function FinancePage() {
         is_default: true,
       }));
       const { data: inserted } = await supabase
-        .from('finance_categories')
+        .from('finance_categories' as any)
         .insert(toInsert)
         .select('id, name, type, icon') as any;
       finalCats = inserted || [];
@@ -128,7 +128,7 @@ export default function FinancePage() {
     const endDate = new Date(parseInt(year), parseInt(month), 0).toISOString().split('T')[0];
 
     const { data: txns } = await supabase
-      .from('finance_transactions')
+      .from('finance_transactions' as any)
       .select('id, type, amount, description, date, category_id')
       .eq('restaurant_id', currentRestaurant.id)
       .gte('date', startDate)
@@ -156,7 +156,7 @@ export default function FinancePage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    await supabase.from('finance_transactions').insert({
+    await supabase.from('finance_transactions' as any).insert({
       restaurant_id: currentRestaurant.id,
       type: formType,
       amount: parseFloat(formAmount),
@@ -181,7 +181,7 @@ export default function FinancePage() {
     if (!currentRestaurant || !newCatName) return;
 
     const supabase = createClient();
-    await supabase.from('finance_categories').insert({
+    await supabase.from('finance_categories' as any).insert({
       restaurant_id: currentRestaurant.id,
       name: newCatName,
       type: newCatType,
@@ -195,7 +195,7 @@ export default function FinancePage() {
 
   const handleDelete = async (id: string) => {
     const supabase = createClient();
-    await supabase.from('finance_transactions').delete().eq('id', id);
+    await supabase.from('finance_transactions' as any).delete().eq('id', id);
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
