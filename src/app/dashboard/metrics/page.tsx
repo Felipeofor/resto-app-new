@@ -285,7 +285,7 @@ function BarChart({
   const chartHeight = 240;
 
   return (
-    <div className="flex items-flex-end gap-1 h-80 p-4 bg-gray-50 rounded-lg overflow-x-auto">
+    <div className="flex items-end gap-1 h-80 p-4 bg-gray-50 rounded-lg overflow-x-auto">
       {data.map((item, idx) => {
         const height = (item.count / maxCount) * chartHeight;
         return (
@@ -315,7 +315,7 @@ function LineChart({
   const chartHeight = 200;
 
   return (
-    <div className="flex items-flex-end gap-1 h-64 p-4 bg-gray-50 rounded-lg overflow-x-auto">
+    <div className="flex items-end gap-1 h-64 p-4 bg-gray-50 rounded-lg overflow-x-auto">
       {data.map((item, idx) => {
         const height = (item.count / maxCount) * chartHeight;
         return (
