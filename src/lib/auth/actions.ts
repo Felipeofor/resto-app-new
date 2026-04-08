@@ -127,6 +127,8 @@ export async function signUp(
  * Sign in with Google OAuth
  */
 export async function signInWithGoogle(): Promise<AuthResult> {
+  let redirectUrl: string | null = null;
+
   try {
     const supabase = await createClient();
 
@@ -145,19 +147,21 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     }
 
     if (data.url) {
-      redirect(data.url);
+      redirectUrl = data.url;
     }
-
-    return {
-      success: true,
-      data,
-    };
   } catch (error) {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
+
+  // redirect() must be called outside try/catch so Next.js can intercept NEXT_REDIRECT
+  if (redirectUrl) {
+    redirect(redirectUrl);
+  }
+
+  return { success: true };
 }
 
 /**
