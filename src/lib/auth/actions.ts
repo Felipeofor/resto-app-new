@@ -93,26 +93,7 @@ export async function signUp(
       };
     }
 
-    // Send welcome email to restaurant owner via Resend
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const { Resend } = await import('resend');
-        const resend = new Resend(process.env.RESEND_API_KEY);
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
-          to: email,
-          subject: '¡Bienvenido a RestoQR! Tu panel está listo 🚀',
-          html: restaurantOwnerWelcomeTemplate({
-            ownerName: fullName,
-            dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://resto-virid.vercel.app'}/dashboard`,
-          }),
-        });
-      } catch (emailErr) {
-        console.error('Error sending owner welcome email:', emailErr);
-        // Don't fail signup if email fails
-      }
-    }
-
+    // Welcome email is sent after email confirmation (in /auth/callback)
     return {
       success: true,
       data,

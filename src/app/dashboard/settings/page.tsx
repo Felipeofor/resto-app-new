@@ -171,6 +171,120 @@ const PRESET_COLORS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
+   Create Restaurant Form (shown when user has no restaurant)
+══════════════════════════════════════════════════════════ */
+function CreateRestaurantForm({ onCreated }: { onCreated: () => Promise<void> }) {
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [slugManual, setSlugManual] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toSlug = (s: string) =>
+    s.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 50);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    if (!slugManual) setSlug(toSlug(e.target.value));
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlugManual(true);
+    setSlug(toSlug(e.target.value));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !slug.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const sb = createClient();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) throw new Error('No autenticado');
+
+      const { error: insertError } = await sb.from('restaurants').insert({
+        owner_id: user.id,
+        name: name.trim(),
+        slug: slug.trim(),
+      });
+
+      if (insertError) {
+        if (insertError.message.includes('unique') || insertError.code === '23505') {
+          setError('Ese slug ya está en uso. Elegí otro nombre o modificalo.');
+        } else {
+          setError(insertError.message);
+        }
+        return;
+      }
+
+      await onCreated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al crear el restaurante');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-[70vh]">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">Creá tu restaurante</h2>
+        <p className="text-gray-500 text-sm mb-6">Configurá el nombre y la URL de tu menú digital.</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Nombre del restaurante
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={handleNameChange}
+              placeholder="Ej: La Parrilla de Juan"
+              required
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              URL del menú
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400 whitespace-nowrap">/menu/</span>
+              <input
+                type="text"
+                value={slug}
+                onChange={handleSlugChange}
+                placeholder="la-parrilla-de-juan"
+                required
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+              />
+            </div>
+            <p className="mt-1 text-xs text-gray-400">Solo letras, números y guiones.</p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving || !name.trim() || !slug.trim()}
+            className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          >
+            {saving ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Creando...</> : 'Crear restaurante'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    Main Page
 ══════════════════════════════════════════════════════════ */
 export default function SettingsPage() {
@@ -327,11 +441,7 @@ export default function SettingsPage() {
   }
 
   if (!settings || !currentRestaurant) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh] text-gray-500 text-sm">
-        No se encontró ningún restaurante.
-      </div>
-    );
+    return <CreateRestaurantForm onCreated={refetch} />;
   }
 
   const menuUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/menu/${currentRestaurant.slug}`;

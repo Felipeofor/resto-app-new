@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { EmailOtpType } from '@supabase/supabase-js'
+import { restaurantOwnerWelcomeTemplate } from '@/lib/email/templates'
 
 /**
  * Handles Supabase OAuth & email confirmation callbacks.
@@ -51,6 +52,26 @@ export async function GET(request: NextRequest) {
         },
         { onConflict: 'id', ignoreDuplicates: false }
       )
+
+      // Send welcome email now that the account is confirmed
+      if (process.env.RESEND_API_KEY) {
+        try {
+          const { Resend } = await import('resend')
+          const resend = new Resend(process.env.RESEND_API_KEY)
+          const ownerName = user.user_metadata?.full_name || user.user_metadata?.name || user.email!
+          await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+            to: user.email!,
+            subject: '¡Bienvenido a RestoQR! Tu panel está listo 🚀',
+            html: restaurantOwnerWelcomeTemplate({
+              ownerName,
+              dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://resto-virid.vercel.app'}/dashboard`,
+            }),
+          })
+        } catch (emailErr) {
+          console.error('Error sending welcome email:', emailErr)
+        }
+      }
     }
 
     return NextResponse.redirect(`${origin}${next}`)
