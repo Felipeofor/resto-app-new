@@ -212,16 +212,9 @@ export async function POST(request: NextRequest) {
       .select('id, photos_processed')
       .eq('restaurant_id', restaurantId)
       .eq('month', currentMonth)
-      .single()
+      .maybeSingle()
 
-    // Fetch restaurant plan to determine limit
-    const { data: restaurant } = await supabase
-      .from('restaurants')
-      .select('plan')
-      .eq('id', restaurantId)
-      .single()
-
-    const limit = restaurant?.plan === 'pro' ? 100 : 30
+    const limit = 30
     const processed = usage?.photos_processed || 0
 
     if (processed + images.length > limit) {

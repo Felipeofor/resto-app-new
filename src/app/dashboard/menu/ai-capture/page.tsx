@@ -42,11 +42,11 @@ export default function AICapturePageClient() {
       .select('photos_processed')
       .eq('restaurant_id', currentRestaurant.id)
       .eq('month', new Date().toISOString().slice(0, 7))
-      .single()
+      .maybeSingle()
 
     setUsage({
       processed: data?.photos_processed || 0,
-      limit: currentRestaurant.plan === 'pro' ? 100 : 30,
+      limit: 30,
     })
   }, [currentRestaurant, supabase])
 
@@ -259,21 +259,23 @@ export default function AICapturePageClient() {
       </div>
 
       {/* Usage Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-900 font-medium">
-          Uso este mes:{' '}
-          <span className="font-bold">
-            {usage.processed}/{usage.limit}
-          </span>{' '}
-          fotos procesadas
-        </p>
-        <div className="mt-2 bg-blue-200 rounded-full h-2 w-full overflow-hidden">
-          <div
-            className="bg-blue-600 h-full transition-all"
-            style={{ width: `${(usage.processed / usage.limit) * 100}%` }}
-          ></div>
+      {usage.limit - usage.processed <= 5 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <p className="text-sm text-amber-900 font-medium">
+            ¡Atención! Te quedan{' '}
+            <span className="font-bold">
+              {Math.max(0, usage.limit - usage.processed)}
+            </span>{' '}
+            fotos disponibles este mes ({usage.processed}/{usage.limit}).
+          </p>
+          <div className="mt-2 bg-amber-200 rounded-full h-2 w-full overflow-hidden">
+            <div
+              className={`h-full transition-all ${usage.processed >= usage.limit ? 'bg-red-600' : 'bg-amber-500'}`}
+              style={{ width: `${Math.min(100, (usage.processed / usage.limit) * 100)}%` }}
+            ></div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Error Message */}
       {error && (
