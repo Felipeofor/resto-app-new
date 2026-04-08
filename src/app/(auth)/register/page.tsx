@@ -49,6 +49,8 @@ function translateSupabaseError(msg: string): string {
     return 'Demasiados intentos. Esperá unos minutos e intentá de nuevo.';
   if (m.includes('network') || m.includes('fetch'))
     return 'Error de conexión. Revisá tu internet e intentá de nuevo.';
+  if (m.includes('sending confirmation email'))
+    return 'Error al enviar el email de confirmación. Puede que el servidor de correos esté saturado, intentá de nuevo en unos minutos.';
   return msg;
 }
 

@@ -113,7 +113,8 @@ export default function SubscriptionPage() {
         .eq('id', user.id);
 
       // Upload receipt
-      const fileName = `subscription-${currentRestaurant.id}-${Date.now()}`;
+      const fileExt = receiptFile.name.split('.').pop() || 'png';
+      const fileName = `subscription-${currentRestaurant.id}-${Date.now()}.${fileExt}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('receipts')
         .upload(fileName, receiptFile);

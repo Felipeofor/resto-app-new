@@ -81,7 +81,9 @@ export async function signUp(
 
     // Update profile created by trigger (handle_new_user sets role='user')
     // We upgrade to 'admin' for self-registered users
-    const { error: profileError } = await supabase.from('profiles').update({
+    const { createAdminClient } = await import('@/lib/supabase/admin');
+    const adminClient = await createAdminClient();
+    const { error: profileError } = await adminClient.from('profiles').update({
       full_name: fullName,
       role: 'admin' as const,
     }).eq('id', data.user.id);

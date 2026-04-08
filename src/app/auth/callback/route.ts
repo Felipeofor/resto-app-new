@@ -42,16 +42,15 @@ export async function GET(request: NextRequest) {
     // Ensure profile row exists
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      await supabase.from('profiles').upsert(
+      const { createAdminClient } = await import('@/lib/supabase/admin')
+      const adminClient = await createAdminClient()
+      await adminClient.from('profiles').update(
         {
-          id: user.id,
-          email: user.email!,
           full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
           avatar_url: user.user_metadata?.avatar_url || null,
           role: 'admin',
-        },
-        { onConflict: 'id', ignoreDuplicates: false }
-      )
+        }
+      ).eq('id', user.id)
 
       // Send welcome email now that the account is confirmed
       if (process.env.RESEND_API_KEY) {
@@ -92,16 +91,15 @@ export async function GET(request: NextRequest) {
     // Ensure profile row exists
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      await supabase.from('profiles').upsert(
+      const { createAdminClient } = await import('@/lib/supabase/admin')
+      const adminClient = await createAdminClient()
+      await adminClient.from('profiles').update(
         {
-          id: user.id,
-          email: user.email!,
           full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
           avatar_url: user.user_metadata?.avatar_url || null,
           role: 'admin',
-        },
-        { onConflict: 'id', ignoreDuplicates: false }
-      )
+        }
+      ).eq('id', user.id)
     }
 
     return NextResponse.redirect(`${origin}${next}`)
