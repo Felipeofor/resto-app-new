@@ -132,7 +132,7 @@ export default function Home() {
               <ChevronRight className="w-5 h-5" />
             </Link>
             <Link
-              href="/menu/demo"
+              href="/demo"
               className="inline-flex items-center justify-center gap-2 text-lg font-semibold text-gray-700 bg-white hover:bg-gray-50 px-8 py-4 rounded-full transition-all border border-gray-200 shadow-sm"
             >
               Ver Demo

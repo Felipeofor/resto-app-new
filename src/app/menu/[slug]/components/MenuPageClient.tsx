@@ -41,6 +41,7 @@ export function MenuPageClient({ restaurant, categories, items }: MenuPageClient
         <EmailGate
           restaurant={restaurant}
           onEmailSubmit={() => setEmailCollected(true)}
+          onSkip={() => setEmailCollected(true)}
         />
       </div>
     )

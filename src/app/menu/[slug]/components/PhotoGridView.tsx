@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Lightbox } from './Lightbox'
+import { AddToCartButton } from './AddToCartButton'
 
 interface Category {
   id: string
@@ -34,7 +35,6 @@ export function PhotoGridView({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [selectedItemIndex, setSelectedItemIndex] = useState(0)
 
-  // Filter items with images
   const itemsWithImages = items.filter((item) => item.image_url)
 
   const openLightbox = (index: number) => {
@@ -87,42 +87,67 @@ export function PhotoGridView({
         ))}
       </div>
 
-      {/* Grid */}
-      {itemsWithImages.length === 0 ? (
+      {/* Grid - shows ALL items, with or without images */}
+      {items.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
-            No hay fotos disponibles en esta categoría
+            No hay platos en esta categoría
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {itemsWithImages.map((item, index) => (
-            <button
-              key={item.id}
-              onClick={() => openLightbox(index)}
-              className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all h-64 md:h-72 cursor-pointer"
-            >
-              {/* Image */}
-              <img
-                src={item.image_url!}
-                alt={item.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          {items.map((item, index) => {
+            const imgIndex = itemsWithImages.findIndex((i) => i.id === item.id)
+            return (
+              <div
+                key={item.id}
+                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 flex flex-col"
+              >
+                {/* Image or placeholder */}
+                <div className="relative h-36 md:h-44 bg-orange-50 overflow-hidden flex-shrink-0">
+                  {item.image_url ? (
+                    <button
+                      onClick={() => imgIndex >= 0 && openLightbox(imgIndex)}
+                      className="w-full h-full"
+                    >
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </button>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl">
+                      🍽️
+                    </div>
+                  )}
+                </div>
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300"></div>
-
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
-                <h3 className="font-semibold text-lg group-hover:text-orange-300 transition-colors">
-                  {item.name}
-                </h3>
-                <p className="text-orange-200 font-bold mt-1">
-                  €{item.price.toFixed(2)}
-                </p>
+                {/* Info */}
+                <div className="p-3 flex flex-col flex-1">
+                  <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 mb-1">
+                    {item.name}
+                  </h3>
+                  {item.description && (
+                    <p className="text-xs text-gray-500 line-clamp-2 mb-2 flex-1">
+                      {item.description}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between mt-auto pt-2 gap-1">
+                    <span className="text-sm font-bold text-orange-600">
+                      ${item.price.toLocaleString('es-AR')}
+                    </span>
+                    <AddToCartButton
+                      menuItemId={item.id}
+                      name={item.name}
+                      price={item.price}
+                      image_url={item.image_url}
+                    />
+                  </div>
+                </div>
               </div>
-            </button>
-          ))}
+            )
+          })}
         </div>
       )}
 

@@ -14,9 +14,10 @@ interface Restaurant {
 interface EmailGateProps {
   restaurant: Restaurant
   onEmailSubmit?: (email: string) => void
+  onSkip?: () => void
 }
 
-export function EmailGate({ restaurant, onEmailSubmit }: EmailGateProps) {
+export function EmailGate({ restaurant, onEmailSubmit, onSkip }: EmailGateProps) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -180,6 +181,19 @@ export function EmailGate({ restaurant, onEmailSubmit }: EmailGateProps) {
           <p className="text-xs text-center text-gray-500">
             Tu correo está seguro con nosotros y no será compartido
           </p>
+
+          {/* Skip option - subtle */}
+          {onSkip && (
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={onSkip}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2"
+              >
+                Continuar sin registrarme
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

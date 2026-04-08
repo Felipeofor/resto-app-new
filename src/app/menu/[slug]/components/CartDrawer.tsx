@@ -4,7 +4,7 @@ import { X, Plus, Minus, Trash2, MessageCircle } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+
 
 type CartDrawerProps = {
   isOpen: boolean;
@@ -72,12 +72,11 @@ export function CartDrawer({
                 {/* Item Header with Image */}
                 <div className="flex gap-3">
                   {item.image_url && (
-                    <div className="w-16 h-16 relative rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                      <Image
+                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                      <img
                         src={item.image_url}
                         alt={item.name}
-                        fill
-                        className="object-cover"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   )}

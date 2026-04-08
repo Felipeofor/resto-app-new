@@ -148,7 +148,7 @@ BEGIN
     INSERT INTO analytics_events (restaurant_id, event_type, created_at)
     VALUES (
       rest_id,
-      (ARRAY['visit', 'qr_scan', 'email_register'])[floor(random() * 3 + 1)],
+      ((ARRAY['visit', 'qr_scan', 'email_register'])[floor(random() * 3 + 1)])::event_type,
       NOW() - (random() * interval '30 days')
     );
   END LOOP;

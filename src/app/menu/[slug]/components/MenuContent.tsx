@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react'
 import { Grid3x3, List } from 'lucide-react'
 import { ListView } from './ListView'
 import { PhotoGridView } from './PhotoGridView'
+import { CartButton } from './CartButton'
+import { CartDrawer } from './CartDrawer'
+import { CartProvider } from '@/lib/context/cart-context'
+import { useCart } from '@/lib/context/cart-context'
 
 interface Restaurant {
   id: string
@@ -12,6 +16,8 @@ interface Restaurant {
   description: string | null
   logo_url: string | null
   cover_url: string | null
+  delivery_enabled?: boolean
+  delivery_fee?: number
 }
 
 interface Category {
@@ -37,18 +43,21 @@ interface MenuContentProps {
 
 type ViewMode = 'list' | 'grid'
 
-export function MenuContent({
+function MenuContentInner({
   restaurant,
   categories,
   items,
 }: MenuContentProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [cartOpen, setCartOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const { setRestaurant } = useCart()
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    setRestaurant(restaurant.id, restaurant.slug)
+  }, [restaurant.id, restaurant.slug, setRestaurant])
 
   if (!mounted) return null
 
@@ -66,7 +75,7 @@ export function MenuContent({
             alt={restaurant.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="absolute inset-0 bg-black/20" />
         </div>
       )}
 
@@ -123,7 +132,7 @@ export function MenuContent({
       </div>
 
       {/* Content Area */}
-      <div className="px-4 pb-8 md:pb-12">
+      <div className="px-4 pb-32 md:pb-12">
         <div className="max-w-4xl mx-auto">
           {viewMode === 'list' ? (
             <ListView
@@ -142,6 +151,25 @@ export function MenuContent({
           )}
         </div>
       </div>
+
+      {/* Floating Cart Button */}
+      <CartButton onCartClick={() => setCartOpen(true)} />
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+        restaurantSlug={restaurant.slug}
+        deliveryFee={restaurant.delivery_enabled ? (restaurant.delivery_fee ?? 0) : 0}
+      />
     </div>
+  )
+}
+
+export function MenuContent(props: MenuContentProps) {
+  return (
+    <CartProvider>
+      <MenuContentInner {...props} />
+    </CartProvider>
   )
 }
