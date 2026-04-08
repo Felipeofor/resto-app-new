@@ -205,9 +205,10 @@ function DashboardInner({
                 key={item.href}
                 href={locked ? '/dashboard/subscription' : item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all text-sm ${
+                title={locked ? 'Disponible en el Plan Pro' : ''}
+                className={`group relative flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all text-sm ${
                   locked
-                    ? 'text-purple-400/50 cursor-not-allowed'
+                    ? 'text-purple-400/50'
                     : active
                       ? 'bg-white/20 text-white font-semibold'
                       : 'text-purple-200 hover:bg-white/10 hover:text-white'
@@ -215,7 +216,14 @@ function DashboardInner({
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
                 <span className="flex-1">{item.label}</span>
-                {locked && <Lock className="w-3.5 h-3.5 text-purple-400/50" />}
+                {locked && (
+                  <>
+                    <Lock className="w-3.5 h-3.5 text-purple-400/50" />
+                    <span className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                      Requiere Plan Pro
+                    </span>
+                  </>
+                )}
               </Link>
             );
           })}
