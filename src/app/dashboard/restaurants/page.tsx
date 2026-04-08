@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, ExternalLink, Filter, Loader } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useRestaurant } from '@/lib/context/restaurant-context';
 
 interface Restaurant {
   id: string;
@@ -22,6 +23,7 @@ interface Restaurant {
 export default function RestaurantsPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { restaurants: contextRestaurants, setCurrentRestaurant } = useRestaurant();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,12 +91,11 @@ export default function RestaurantsPage() {
     setFilteredRestaurants(filtered);
   }, [searchTerm, filterPlan, restaurants]);
 
-  const handleSelectRestaurant = (restaurantId: string, restaurantSlug: string) => {
-    // Save to localStorage
-    localStorage.setItem('selectedRestaurantId', restaurantId);
-    localStorage.setItem('selectedRestaurantSlug', restaurantSlug);
-
-    // Redirect to dashboard
+  const handleSelectRestaurant = (restaurantId: string) => {
+    const target = contextRestaurants.find(r => r.id === restaurantId);
+    if (target) {
+      setCurrentRestaurant(target);
+    }
     router.push('/dashboard');
   };
 
@@ -232,7 +233,7 @@ export default function RestaurantsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <button
-                      onClick={() => handleSelectRestaurant(restaurant.id, restaurant.slug)}
+                      onClick={() => handleSelectRestaurant(restaurant.id)}
                       className="inline-flex items-center space-x-1 text-purple-600 hover:text-purple-700 font-medium hover:underline"
                     >
                       <span>Ver</span>
@@ -287,7 +288,7 @@ export default function RestaurantsPage() {
                 Creado: {new Date(restaurant.created_at).toLocaleDateString('es-ES')}
               </p>
               <button
-                onClick={() => handleSelectRestaurant(restaurant.id, restaurant.slug)}
+                onClick={() => handleSelectRestaurant(restaurant.id)}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200 transition-colors"
               >
                 <span>Ver</span>
