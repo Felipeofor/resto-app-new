@@ -19,6 +19,10 @@ import {
   Search,
   Clock,
   AlertCircle,
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
 } from 'lucide-react';
 
 /* ---------- types ---------- */
@@ -100,6 +104,7 @@ const sections = [
   { id: 'emails', label: 'Emails', icon: Mail },
   { id: 'metrics', label: 'Metricas', icon: BarChart3 },
   { id: 'qr', label: 'QR Code', icon: QrCode },
+  { id: 'finance', label: 'Finanzas', icon: Wallet },
 ];
 
 /* ---------- status config ---------- */
@@ -276,6 +281,7 @@ export default function DemoAdminPage() {
           {activeSection === 'emails' && <EmailsSection data={data} />}
           {activeSection === 'metrics' && <MetricsSection data={data} />}
           {activeSection === 'qr' && <QRSection data={data} />}
+          {activeSection === 'finance' && <FinanceSection />}
         </div>
       </div>
     </div>
@@ -1222,6 +1228,79 @@ function SimpleBarChart({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/* ========================================================================
+   SECTION: Finance (Demo)
+======================================================================== */
+function FinanceSection() {
+  const demoTransactions = [
+    { type: 'income', amount: 85000, category: 'Ventas', icon: '💰', date: '07/04', desc: 'Ventas del dia' },
+    { type: 'income', amount: 23000, category: 'Delivery', icon: '🛵', date: '07/04', desc: 'Pedidos PedidosYa' },
+    { type: 'expense', amount: 45000, category: 'Insumos', icon: '🥩', date: '07/04', desc: 'Compra de carne y verduras' },
+    { type: 'expense', amount: 120000, category: 'Sueldos', icon: '👥', date: '06/04', desc: 'Sueldos staff cocina' },
+    { type: 'income', amount: 92000, category: 'Ventas', icon: '💰', date: '06/04', desc: 'Ventas del dia' },
+    { type: 'expense', amount: 15000, category: 'Servicios', icon: '💡', date: '05/04', desc: 'Factura de luz' },
+    { type: 'income', amount: 18000, category: 'Eventos', icon: '🎉', date: '05/04', desc: 'Cumpleanos privado' },
+    { type: 'expense', amount: 8500, category: 'Marketing', icon: '📣', date: '04/04', desc: 'Publicidad Instagram' },
+  ];
+
+  const totalIncome = demoTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const totalExpense = demoTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const balance = totalIncome - totalExpense;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Finanzas</h1>
+        <p className="text-gray-600 mt-2">Control de ingresos y egresos</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 text-green-600 mb-2">
+            <TrendingUp className="w-5 h-5" />
+            <span className="text-sm font-medium">Ingresos</span>
+          </div>
+          <p className="text-2xl font-bold text-green-700">${totalIncome.toLocaleString('es-AR')}</p>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 text-red-600 mb-2">
+            <TrendingDown className="w-5 h-5" />
+            <span className="text-sm font-medium">Egresos</span>
+          </div>
+          <p className="text-2xl font-bold text-red-700">${totalExpense.toLocaleString('es-AR')}</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 text-blue-600 mb-2">
+            <DollarSign className="w-5 h-5" />
+            <span className="text-sm font-medium">Balance</span>
+          </div>
+          <p className="text-2xl font-bold text-blue-700">${balance.toLocaleString('es-AR')}</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h3 className="font-bold text-gray-900">Movimientos recientes</h3>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {demoTransactions.map((t, i) => (
+            <div key={i} className="px-6 py-3 flex items-center gap-4">
+              <span className="text-xl w-8 text-center">{t.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{t.desc}</p>
+                <p className="text-xs text-gray-400">{t.category} - {t.date}</p>
+              </div>
+              <p className={`font-bold text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                {t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString('es-AR')}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

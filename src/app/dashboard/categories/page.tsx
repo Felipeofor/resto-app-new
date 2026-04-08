@@ -238,8 +238,10 @@ export default function CategoriesPage() {
       {/* Categories List */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         {categories.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No hay categorías aún</p>
+          <div className="text-center py-12 space-y-3">
+            <div className="text-5xl mx-auto">📋</div>
+            <p className="text-gray-600 font-medium">Todavia no tenes categorias</p>
+            <p className="text-sm text-gray-400 max-w-sm mx-auto">Las categorias organizan tu menu (ej: Entradas, Platos principales, Postres). Crea la primera para empezar a agregar platos.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">

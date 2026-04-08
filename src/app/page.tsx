@@ -104,11 +104,11 @@ const plans = [
   {
     name: "Pro Anual",
     price: "$50.000",
-    period: "/ano",
+    period: "/año",
     description: "2 meses gratis - el mejor valor",
     features: [
       "Todo del plan Pro Mensual",
-      "Ahorras $10.000 por ano",
+      "Ahorras $10.000 por año",
       "365 dias de acceso garantizado",
       "Acceso anticipado a nuevas features",
     ],

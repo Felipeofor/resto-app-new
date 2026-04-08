@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useRestaurant } from '@/lib/context/restaurant-context';
 import { createClient } from '@/lib/supabase/client';
+import OnboardingChecklist from './components/OnboardingChecklist';
 
 interface DashboardStats {
   totalItems: number;
@@ -130,6 +131,9 @@ export default function DashboardPage() {
           Bienvenido a tu panel de administración
         </p>
       </div>
+
+      {/* Onboarding Checklist */}
+      <OnboardingChecklist />
 
       {/* Stats Grid - Mobile responsive: 2x2 on mobile, 4 columns on large screens */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

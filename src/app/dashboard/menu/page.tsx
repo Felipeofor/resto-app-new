@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Edit2, Trash2, GripVertical, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit2, Trash2, GripVertical, Eye, EyeOff, UtensilsCrossed } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRestaurant } from '@/lib/context/restaurant-context';
 
@@ -332,8 +332,17 @@ export default function MenuPage() {
         ))}
 
         {displayItems.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-600">No hay platos en esta categoría</p>
+          <div className="text-center py-12 bg-white rounded-lg space-y-3">
+            <UtensilsCrossed className="w-12 h-12 text-gray-200 mx-auto" />
+            <p className="text-gray-600 font-medium">No hay platos todavia</p>
+            <p className="text-sm text-gray-400">Agrega tu primer plato para que aparezca en el menu de tus clientes</p>
+            <Link
+              href="/dashboard/menu/new"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors mt-2"
+            >
+              <Plus className="w-4 h-4" />
+              Agregar plato
+            </Link>
           </div>
         )}
       </div>
