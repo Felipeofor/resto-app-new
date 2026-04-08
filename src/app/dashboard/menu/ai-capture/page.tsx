@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { Upload, Loader, CheckCircle, AlertCircle, X, Edit2, Save } from 'lucide-react'
 import { useDropZone } from '@/lib/hooks/useDropZone'
 import { useRestaurant } from '@/lib/context/restaurant-context'
@@ -50,11 +50,9 @@ export default function AICapturePageClient() {
     })
   }, [currentRestaurant, supabase])
 
-  import('react').then((React) => {
-    React.useEffect(() => {
-      fetchUsage()
-    }, [fetchUsage])
-  });
+  useEffect(() => {
+    fetchUsage()
+  }, [fetchUsage])
 
   const { isDragActive, getRootProps } = useDropZone({
     onDrop: handleDrop,
