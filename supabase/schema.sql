@@ -600,6 +600,9 @@ ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS incentive_title TEXT DEFAULT '1
 ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS incentive_description TEXT DEFAULT 'En tu próxima visita o pedido online';
 ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS incentive_code TEXT; -- optional promo code to show
 
+-- Service mode: 'delivery' (default, cart + checkout) or 'dine_in' (browse + selection list for waiter)
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS service_mode TEXT DEFAULT 'delivery';
+
 -- ============================================
 -- PROFILES: add phone for restaurant owners
 -- ============================================

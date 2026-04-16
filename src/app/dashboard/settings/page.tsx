@@ -14,6 +14,8 @@ import {
   ChevronUp,
   ExternalLink,
   Gift,
+  UtensilsCrossed,
+  Truck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRestaurant } from '@/lib/context/restaurant-context';
@@ -44,6 +46,8 @@ interface RestaurantSettings {
   incentive_title: string | null;
   incentive_description: string | null;
   incentive_code: string | null;
+  // Service mode
+  service_mode: 'delivery' | 'dine_in';
   // Menu behaviour
   require_email: boolean;
   welcome_message: string | null;
@@ -333,6 +337,7 @@ export default function SettingsPage() {
             incentive_title: data.incentive_title ?? '10% de descuento',
             incentive_description: data.incentive_description ?? 'En tu próxima visita o pedido online',
             incentive_code: data.incentive_code ?? null,
+            service_mode: data.service_mode ?? 'delivery',
             require_email: data.require_email ?? false,
             welcome_message: data.welcome_message ?? null,
             discount_text: data.discount_text ?? null,
@@ -563,7 +568,52 @@ export default function SettingsPage() {
           />
         </Section>
 
-        {/* ------ 2. Pagos y delivery ------------------------------------------------------------------------------------------ */}
+        {/* ------ 2. Modo de Servicio ------------------------------------------------------------------------------------- */}
+        <Section
+          icon={UtensilsCrossed}
+          title="Modo de Servicio"
+          subtitle="Cómo usan tus clientes el menú digital"
+        >
+          <Field
+            label="¿Cómo funciona tu menú?"
+            hint="Podés cambiarlo en cualquier momento"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+              <button
+                type="button"
+                onClick={() => setProp('service_mode', 'delivery')}
+                className={`flex flex-col items-center gap-2 p-4 border-2 rounded-xl transition-all text-center ${
+                  settings.service_mode === 'delivery'
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                }`}
+              >
+                <Truck className="w-6 h-6" />
+                <span className="text-sm font-semibold">Delivery / Pedidos</span>
+                <span className="text-xs text-gray-500">
+                  Carrito, checkout y pedidos online
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setProp('service_mode', 'dine_in')}
+                className={`flex flex-col items-center gap-2 p-4 border-2 rounded-xl transition-all text-center ${
+                  settings.service_mode === 'dine_in'
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                }`}
+              >
+                <UtensilsCrossed className="w-6 h-6" />
+                <span className="text-sm font-semibold">Restaurante / Mesa</span>
+                <span className="text-xs text-gray-500">
+                  El cliente arma su selección y se la muestra al mozo
+                </span>
+              </button>
+            </div>
+          </Field>
+        </Section>
+
+        {/* ------ 3. Pagos y delivery ------------------------------------------------------------------------------------------ */}
         <Section
           icon={CreditCard}
           title="Pagos y Delivery"

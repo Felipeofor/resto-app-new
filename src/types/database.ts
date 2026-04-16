@@ -64,6 +64,7 @@ export type Database = {
           incentive_title: string | null
           incentive_description: string | null
           incentive_code: string | null
+          service_mode: 'delivery' | 'dine_in'
           created_at: string
           updated_at: string
         }
@@ -96,6 +97,7 @@ export type Database = {
           incentive_title?: string | null
           incentive_description?: string | null
           incentive_code?: string | null
+          service_mode?: 'delivery' | 'dine_in'
           created_at?: string
           updated_at?: string
         }
@@ -128,6 +130,7 @@ export type Database = {
           incentive_title?: string | null
           incentive_description?: string | null
           incentive_code?: string | null
+          service_mode?: 'delivery' | 'dine_in'
           created_at?: string
           updated_at?: string
         }

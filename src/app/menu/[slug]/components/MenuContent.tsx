@@ -17,6 +17,7 @@ interface Restaurant {
   cover_url: string | null
   delivery_enabled?: boolean
   delivery_fee?: number
+  service_mode?: 'delivery' | 'dine_in'
   primary_color?: string | null
   default_view?: 'list' | 'grid' | null
 }
@@ -174,7 +175,10 @@ function MenuContentInner({
       </div>
 
       {/* Floating Cart Button */}
-      <CartButton onCartClick={() => setCartOpen(true)} />
+      <CartButton
+        onCartClick={() => setCartOpen(true)}
+        serviceMode={restaurant.service_mode || 'delivery'}
+      />
 
       {/* Cart Drawer */}
       <CartDrawer
@@ -182,6 +186,7 @@ function MenuContentInner({
         onClose={() => setCartOpen(false)}
         restaurantSlug={restaurant.slug}
         deliveryFee={restaurant.delivery_enabled ? (restaurant.delivery_fee ?? 0) : 0}
+        serviceMode={restaurant.service_mode || 'delivery'}
       />
     </div>
   )

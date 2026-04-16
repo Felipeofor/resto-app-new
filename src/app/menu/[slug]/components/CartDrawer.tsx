@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Plus, Minus, Trash2, MessageCircle } from 'lucide-react';
+import { X, Plus, Minus, Trash2, MessageCircle, ClipboardList } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ type CartDrawerProps = {
   onClose: () => void;
   restaurantSlug: string;
   deliveryFee?: number;
+  serviceMode?: 'delivery' | 'dine_in';
 };
 
 export function CartDrawer({
@@ -18,6 +19,7 @@ export function CartDrawer({
   onClose,
   restaurantSlug,
   deliveryFee = 0,
+  serviceMode = 'delivery',
 }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, updateNotes, getTotal } = useCart();
   const [expandedNotes, setExpandedNotes] = useState<string | null>(null);
@@ -43,7 +45,9 @@ export function CartDrawer({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white">
-          <h2 className="text-lg font-bold text-gray-900">Tu Pedido</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            {serviceMode === 'dine_in' ? 'Mi Selección' : 'Tu Pedido'}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -57,10 +61,14 @@ export function CartDrawer({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-              <div className="text-6xl mb-4">🛒</div>
-              <p className="text-gray-600 font-medium">Tu carrito está vacío</p>
+              <div className="text-6xl mb-4">{serviceMode === 'dine_in' ? '📋' : '🛒'}</div>
+              <p className="text-gray-600 font-medium">
+                {serviceMode === 'dine_in' ? 'Tu selección está vacía' : 'Tu carrito está vacío'}
+              </p>
               <p className="text-sm text-gray-500 mt-2">
-                Agrega algunos platos deliciosos
+                {serviceMode === 'dine_in'
+                  ? 'Elegí los platos que te interesan'
+                  : 'Agrega algunos platos deliciosos'}
               </p>
             </div>
           ) : (
@@ -168,32 +176,57 @@ export function CartDrawer({
         {/* Footer */}
         {items.length > 0 && (
           <div className="border-t border-gray-200 p-4 space-y-3 sticky bottom-0 bg-white">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal:</span>
-              <span className="font-medium">${subtotal.toFixed(2)}</span>
-            </div>
+            {serviceMode === 'dine_in' ? (
+              <>
+                <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <ClipboardList className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <p className="text-sm text-amber-800">
+                    Mostrale esta lista al mozo para hacer tu pedido
+                  </p>
+                </div>
 
-            {deliveryFee > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Envío:</span>
-                <span className="font-medium">${deliveryFee.toFixed(2)}</span>
-              </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">{items.reduce((sum, i) => sum + i.quantity, 0)} items seleccionados</span>
+                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                </div>
+
+                <button
+                  onClick={onClose}
+                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                >
+                  Listo
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                </div>
+
+                {deliveryFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Envío:</span>
+                    <span className="font-medium">${deliveryFee.toFixed(2)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between border-t border-gray-200 pt-3">
+                  <span className="font-bold text-gray-900">Total:</span>
+                  <span className="font-bold text-lg text-transparent bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text">
+                    ${total.toFixed(2)}
+                  </span>
+                </div>
+
+                <Link
+                  href={`/menu/${restaurantSlug}/checkout`}
+                  onClick={onClose}
+                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl active:scale-95 block text-center"
+                >
+                  Ir al Checkout
+                </Link>
+              </>
             )}
-
-            <div className="flex justify-between border-t border-gray-200 pt-3">
-              <span className="font-bold text-gray-900">Total:</span>
-              <span className="font-bold text-lg text-transparent bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text">
-                ${total.toFixed(2)}
-              </span>
-            </div>
-
-            <Link
-              href={`/menu/${restaurantSlug}/checkout`}
-              onClick={onClose}
-              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl active:scale-95 block text-center"
-            >
-              Ir al Checkout
-            </Link>
           </div>
         )}
       </div>
