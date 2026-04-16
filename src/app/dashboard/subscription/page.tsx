@@ -263,18 +263,17 @@ export default function SubscriptionPage() {
         </div>
       </div>
 
-      {/* Pro features + plan selector (show when free or renewing) */}
-      {(!isPro || (proExpiresAt && Math.ceil((new Date(proExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) <= 5)) && (
-        <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 text-white">
+      {/* Pro features + plan selector */}
+      <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 text-white">
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-5 h-5 text-yellow-300" />
             <h3 className="text-lg font-bold">
-              {isPro ? 'Renova tu Plan Pro' : 'Actualizá a Pro'}
+              {isPro ? 'Extendé tu Plan Pro' : 'Actualizá a Pro'}
             </h3>
           </div>
           <p className="text-purple-100 mb-4">
             {isPro
-              ? 'Tu plan está por vencer. Renová para no perder acceso:'
+              ? 'Renová o pasate al plan anual y ahorrá 2 meses:'
               : 'Desbloqueá todas las funcionalidades para tu restaurante:'}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -334,8 +333,7 @@ export default function SubscriptionPage() {
               {isPro ? 'Renovar plan' : 'Actualizar a Pro'}
             </button>
           )}
-        </div>
-      )}
+      </div>
 
       {/* Payment form */}
       {showPaymentForm && (
