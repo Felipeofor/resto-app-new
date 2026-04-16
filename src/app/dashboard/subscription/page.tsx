@@ -338,7 +338,7 @@ export default function SubscriptionPage() {
       )}
 
       {/* Payment form */}
-      {showPaymentForm && !isPro && (
+      {showPaymentForm && (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-6">
           <h3 className="text-lg font-bold text-gray-900">Datos para la transferencia</h3>
 
@@ -590,7 +590,7 @@ export default function SubscriptionPage() {
             Cada solucion se desarrolla a medida para tu restaurante. Contactanos para recibir una propuesta personalizada sin compromiso.
           </p>
           <a
-            href="https://wa.me/5491112345678?text=Hola!%20Me%20interesa%20una%20solucion%20a%20medida%20para%20mi%20restaurante"
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_RESTOQR_WHATSAPP || '5491159955385'}?text=Hola!%20Me%20interesa%20una%20solucion%20a%20medida%20para%20mi%20restaurante`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-green-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-green-700 transition-colors"
